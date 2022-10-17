@@ -77,6 +77,9 @@ typedef enum GAMEVERSION
     GV_SNACK
 } GAMESTATE;
 
+static Texture2D SenequeHeadImage = { 0 };
+static GAMESTATE GameState = GV_NORMAL; 
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -120,6 +123,8 @@ int main(void)
 // Initialize game variables
 void InitGame(void)
 {
+    Image TempImage = { 0 };
+
     framesCounter = 0;
     gameOver = false;
     pause = false;
@@ -148,6 +153,10 @@ void InitGame(void)
     fruit.size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
     fruit.color = SKYBLUE;
     fruit.active = false;
+
+    TempImage = LoadImage("seneque.png");
+    ImageResize(&TempImage, 31, 31);
+    SenequeHeadImage = LoadTextureFromImage(TempImage);
 }
 
 // Update game (one frame)
@@ -272,6 +281,11 @@ void DrawGame(void)
 
             // Draw snake
             for (int i = 0; i < counterTail; i++) DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
+
+            if (GameState == GV_SENEQUE)
+            {
+                DrawTexture(SenequeHeadImage, snake[0].position.x, snake[0].position.y, WHITE);
+            }
 
             // Draw fruit to pick
             DrawRectangleV(fruit.position, fruit.size, fruit.color);
