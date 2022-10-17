@@ -162,7 +162,7 @@ void InitGame(void)
     fruit.color = SKYBLUE;
     fruit.active = false;
 
-    TempImage = LoadImage("seneque.png");
+    TempImage = LoadImage("assets/seneque.png");
     ImageResize(&TempImage, 31, 31);
     SenequeHeadImage = LoadTextureFromImage(TempImage);
 }
