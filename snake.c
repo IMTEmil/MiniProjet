@@ -24,7 +24,6 @@
 #define SNAKE_LENGTH   256
 #define SQUARE_SIZE     31
 
-#define MENU_CHOICE_X0 50
 #define MENU_CHOICE_FONT_SIZE 50
 
 //----------------------------------------------------------------------------------
@@ -83,10 +82,32 @@ typedef enum GAMESTATE
     GV_SNARE,
 
     GV_SNACK
+
 } GAMESTATE;
 
-static Texture2D SenequeHeadImage = { 0 };
-static GAMESTATE GameState = GV_MENU; 
+typedef struct 
+{
+    Texture2D SenequeHeadImage;
+
+    bool isCitation;
+
+    int indexCitation;
+
+    int LastCitationFrame;
+} SENEQUE;
+
+static GAMESTATE GameState = GV_MENU;
+
+static SENEQUE SenequeStruct = { 0 };
+
+static char *CitationsSeneque[] = { 
+"Le travail est l'aliment des âmes nobles.",
+"C'est pendant l'orage qu'on connait le pilote.",
+"Toute la vie n'est qu'un voyage vers la mort.",
+"Hâte toi de bien vivre et songe que chaque jour est à lui seul une vie.",
+"Je préfère modérer mes joies que réprimer mes douleurs.",
+"Il ne vaut mieux ne pas commencer que de cesser" };
+static char GameOverSeneque[] = { "L'erreur n'est pas un crime." };
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -164,7 +185,7 @@ void InitGame(void)
 
     TempImage = LoadImage("assets/seneque.png");
     ImageResize(&TempImage, 31, 31);
-    SenequeHeadImage = LoadTextureFromImage(TempImage);
+    SenequeStruct.SenequeHeadImage = LoadTextureFromImage(TempImage);
 }
 
 // Update game (one frame)
@@ -252,6 +273,14 @@ void UpdateGame(void)
                 snake[counterTail].position = snakePosition[counterTail - 1];
                 counterTail += 1;
                 fruit.active = false;
+                SenequeStruct.isCitation = true;
+                SenequeStruct.LastCitationFrame = framesCounter;
+            }
+
+            if ((framesCounter - SenequeStruct.LastCitationFrame) > 60)
+            {
+                SenequeStruct.isCitation = false;
+                SenequeStruct.indexCitation = GetRandomValue(0, 5);
             }
 
             framesCounter++;
@@ -325,7 +354,12 @@ void DrawGame(void)
 
             if (GameState == GV_SENEQUE)
             {
-                DrawTexture(SenequeHeadImage, snake[0].position.x, snake[0].position.y, WHITE);
+                DrawTexture(SenequeStruct.SenequeHeadImage, snake[0].position.x, snake[0].position.y, WHITE);
+
+                if (SenequeStruct.isCitation == true)
+                {
+                    DrawText(CitationsSeneque[SenequeStruct.indexCitation], screenWidth/2 - MeasureText(CitationsSeneque[SenequeStruct.indexCitation], 23)/2, screenHeight/2 - 23, 23, LIGHTGRAY);
+                }
             }
 
             // Draw fruit to pick
