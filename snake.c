@@ -12,6 +12,7 @@
 ********************************************************************************************/
 
 #include "raylib.h"
+#include <string.h>
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -22,6 +23,9 @@
 //----------------------------------------------------------------------------------
 #define SNAKE_LENGTH   256
 #define SQUARE_SIZE     31
+
+#define MENU_CHOICE_X0 50
+#define MENU_CHOICE_FONT_SIZE 50
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -66,8 +70,12 @@ static void DrawGame(void);         // Draw game (one frame)
 static void UnloadGame(void);       // Unload game
 static void UpdateDrawFrame(void);  // Update and Draw (one frame)
 
-typedef enum GAMEVERSION 
+static void DrawMenu(void);
+
+typedef enum GAMESTATE 
 {
+    GV_MENU,
+
     GV_NORMAL,
 
     GV_SENEQUE,
@@ -78,7 +86,7 @@ typedef enum GAMEVERSION
 } GAMESTATE;
 
 static Texture2D SenequeHeadImage = { 0 };
-static GAMESTATE GameState = GV_NORMAL; 
+static GAMESTATE GameState = GV_MENU; 
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -256,7 +264,36 @@ void UpdateGame(void)
             InitGame();
             gameOver = false;
         }
+
+        if (IsKeyPressed('I'))
+        {
+            gameOver = true;
+            GameState = GV_MENU;
+        }
     }
+}
+
+// Draw Menu (if GV_MENU)
+void DrawMenu(void)
+{
+    ClearBackground(RAYWHITE);
+
+    // Draw text
+    DrawText("Choose your game !", (GetScreenWidth() - MeasureText("Choose your game !", 50)) / 2, 40, 50, LIGHTGRAY);
+    DrawText("\'1\'. SNAKE", 50, 140, MENU_CHOICE_FONT_SIZE, LIGHTGRAY);
+    DrawText("\'2\'. SENEQUE", 400 , 140, MENU_CHOICE_FONT_SIZE, LIGHTGRAY);
+    DrawText("\'3\'. SNARE", 50, 300, MENU_CHOICE_FONT_SIZE, LIGHTGRAY);
+    DrawText("\'4\'. SNACK", 400, 300, MENU_CHOICE_FONT_SIZE, LIGHTGRAY);
+
+    // Wait for user input
+    if (IsKeyPressed('1') == true) GameState = GV_NORMAL;
+
+    if (IsKeyPressed('2') == true) GameState = GV_SENEQUE;
+
+    if (IsKeyPressed('3') == true) GameState = GV_SNARE;
+
+    if (IsKeyPressed('4') == true) GameState = GV_SNACK;
+
 }
 
 // Draw game (one frame)
@@ -266,7 +303,11 @@ void DrawGame(void)
 
         ClearBackground(RAYWHITE);
 
-        if (!gameOver)
+        if (GameState == GV_MENU)
+        {
+            DrawMenu();
+        }
+        else if (!gameOver && (GameState != GV_MENU))
         {
             // Draw grid lines
             for (int i = 0; i < screenWidth/SQUARE_SIZE + 1; i++)
@@ -292,7 +333,11 @@ void DrawGame(void)
 
             if (pause) DrawText("GAME PAUSED", screenWidth/2 - MeasureText("GAME PAUSED", 40)/2, screenHeight/2 - 40, 40, GRAY);
         }
-        else DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
+        else 
+        {
+            DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
+            DrawText("OR PRESS [I] TO GO BACK TO MENU", GetScreenWidth()/2 - MeasureText("OR PRESS [I] TO GO BACK TO MENU", 20)/2, GetScreenHeight()/2, 20, GRAY);
+        }
 
     EndDrawing();
 }
