@@ -66,6 +66,17 @@ static void DrawGame(void);         // Draw game (one frame)
 static void UnloadGame(void);       // Unload game
 static void UpdateDrawFrame(void);  // Update and Draw (one frame)
 
+typedef enum GAMEVERSION 
+{
+    GV_NORMAL,
+
+    GV_SENEQUE,
+
+    GV_SNARE,
+
+    GV_SNACK
+} GAMESTATE;
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -73,7 +84,7 @@ int main(void)
 {
     // Initialization (Note windowTitle is unused on Android)
     //---------------------------------------------------------
-    InitWindow(screenWidth, screenHeight, "classic game: snake");
+    InitWindow(screenWidth, screenHeight, "classic game: snake ?");
 
     InitGame();
 
