@@ -102,25 +102,35 @@ typedef struct
 
 } GAME_SENEQUE;
 
+typedef struct Snare
+{
+    Vector2 position;
+    Vector2 size;
+    bool active;
+    Color color;
+} Snare;
+
 static GAMESTATE GameState = GS_MENU;
 
 static GAME_SENEQUE SenequeStruct = {0};
 
 static char *CitationsSeneque[] = {
-    "Le travail est l'aliment des âmes nobles.",
-    "C'est pendant l'orage qu'on connait le pilote.",
-    "Toute la vie n'est qu'un voyage vers la mort.",
-    "Hâte toi de bien vivre et songe que chaque jour est à lui seul une vie.",
-    "Je préfère modérer mes joies que réprimer mes douleurs.",
-    "Il ne vaut mieux ne pas commencer que de cesser",
-    "Un grand exemple ne nait que de la mauvaise fortune.",
-    "Il est vaincu sans gloire celui qui est vaincu sans péril.",
-    "La parole reflète l'âme.",
-    "A quoi perd-on la plus grand partie de sa vie ? à différer.",
-    "On est nulle part quand on est partout.",
-    "Pendant qu'on la diffère, la vie passe en courant.",
-    "Ils vomissent pour manger, ils mangent pour vomir.",
-    "L'erreur n'est pas un crime."};
+"Le travail est l'aliment des âmes nobles.",
+"C'est pendant l'orage qu'on connait le pilote.",
+"Toute la vie n'est qu'un voyage vers la mort.",
+"Hâte toi de bien vivre et songe que chaque jour est à lui seul une vie.",
+"Je préfère modérer mes joies que réprimer mes douleurs.",
+"Il ne vaut mieux ne pas commencer que de cesser",
+"Un grand exemple ne nait que de la mauvaise fortune.",
+"Il est vaincu sans gloire celui qui est vaincu sans péril.",
+"La parole reflète l'âme.",
+"A quoi perd-on la plus grand partie de sa vie ? à différer.",
+"On est nulle part quand on est partout.",
+"Pendant qu'on la diffère, la vie passe en courant.",
+"Ils vomissent pour manger, ils mangent pour vomir.",
+"L'erreur n'est pas un crime."};
+
+static Snare snare = { 0 };
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -198,9 +208,14 @@ void InitGame(void)
     fruit.color = SKYBLUE;
     fruit.active = false;
 
+    snare.size = (Vector2) { SQUARE_SIZE, SQUARE_SIZE };
+    snare.color = DARKPURPLE;
+    snare.active = false;
+
     TempImage = LoadImage("assets/seneque.png");
     ImageResize(&TempImage, 31, 31);
     SenequeStruct.SenequeHeadImage = LoadTextureFromImage(TempImage);
+    UnloadImage(TempImage);
 }
 
 void IfCollisionSendCitation(void)
@@ -210,7 +225,6 @@ void IfCollisionSendCitation(void)
         SenequeStruct.isCitation = true;
         SenequeStruct.LastCitationFrame = framesCounter;
     }
-    
 }
 
 void CitationDuration(int seconds)
@@ -303,6 +317,26 @@ void UpdateGame(void)
                     }
                 }
             }
+            
+            if (GameState == GS_SNARE)
+            {
+                // Snare position calculation
+                if (!snare.active)
+                {
+                    snare.active = true;
+                    snare.position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
+
+                    for (int i = 0; i < counterTail; i++)
+                    {
+                        while (((snare.position.x == snake[i].position.x) && (snare.position.y == snake[i].position.y))
+                        && ((snare.position.x == fruit.position.x) && snare.position.y == fruit.position.y))
+                        {
+                            snare.position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
+                            i = 0;
+                        }
+                    }
+                }
+            }
 
             // Collision
             if ((snake[0].position.x < (fruit.position.x + fruit.size.x) && (snake[0].position.x + snake[0].size.x) > fruit.position.x) &&
@@ -313,6 +347,13 @@ void UpdateGame(void)
                 fruit.active = false;
 
                 IfCollisionSendCitation();
+            }
+
+            // Collision with snare
+            if ((snake[0].position.x < (snare.position.x + fruit.size.x) && (snake[0].position.x + snake[0].size.x) > snare.position.x) &&
+                (snake[0].position.y < (snare.position.y + fruit.size.y) && (snake[0].position.y + snake[0].size.y) > snare.position.y))
+            {
+                gameOver = true;                
             }
 
             CitationDuration(1); 
@@ -405,6 +446,12 @@ void DrawGame(void)
 
         // Draw fruit to pick
         DrawRectangleV(fruit.position, fruit.size, fruit.color);
+
+        // Draw Snare 
+        if (GameState == GS_SNARE)
+        {
+            DrawRectangleV(snare.position, snare.size, snare.color);
+        }
 
         if (pause)
             DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
