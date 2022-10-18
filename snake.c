@@ -72,18 +72,21 @@ static void UnloadGame(void);      // Unload game
 static void UpdateDrawFrame(void); // Update and Draw (one frame)
 
 static void DrawMenu(void);
+static void IfCollisionSendCitation(void);
+static void CitationDuration(int seconds);
+static void DrawSeneque(void);
 
 typedef enum GAMESTATE
 {
-    GV_MENU,
+    GS_MENU,
 
-    GV_NORMAL,
+    GS_NORMAL,
 
-    GV_SENEQUE,
+    GS_SENEQUE,
 
-    GV_SNARE,
+    GS_SNARE,
 
-    GV_SNACK
+    GS_SNACK
 
 } GAMESTATE;
 
@@ -96,11 +99,12 @@ typedef struct
     int indexCitation;
 
     int LastCitationFrame;
-} SENEQUE;
 
-static GAMESTATE GameState = GV_MENU;
+} GAME_SENEQUE;
 
-static SENEQUE SenequeStruct = {0};
+static GAMESTATE GameState = GS_MENU;
+
+static GAME_SENEQUE SenequeStruct = {0};
 
 static char *CitationsSeneque[] = {
     "Le travail est l'aliment des âmes nobles.",
@@ -108,8 +112,15 @@ static char *CitationsSeneque[] = {
     "Toute la vie n'est qu'un voyage vers la mort.",
     "Hâte toi de bien vivre et songe que chaque jour est à lui seul une vie.",
     "Je préfère modérer mes joies que réprimer mes douleurs.",
-    "Il ne vaut mieux ne pas commencer que de cesser"};
-static char GameOverSeneque[] = {"L'erreur n'est pas un crime."};
+    "Il ne vaut mieux ne pas commencer que de cesser",
+    "Un grand exemple ne nait que de la mauvaise fortune.",
+    "Il est vaincu sans gloire celui qui est vaincu sans péril.",
+    "La parole reflète l'âme.",
+    "A quoi perd-on la plus grand partie de sa vie ? à différer.",
+    "On est nulle part quand on est partout.",
+    "Pendant qu'on la diffère, la vie passe en courant.",
+    "Ils vomissent pour manger, ils mangent pour vomir.",
+    "L'erreur n'est pas un crime."};
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -190,6 +201,25 @@ void InitGame(void)
     TempImage = LoadImage("assets/seneque.png");
     ImageResize(&TempImage, 31, 31);
     SenequeStruct.SenequeHeadImage = LoadTextureFromImage(TempImage);
+}
+
+void IfCollisionSendCitation(void)
+{
+    if (GameState == GS_SENEQUE)
+    {
+        SenequeStruct.isCitation = true;
+        SenequeStruct.LastCitationFrame = framesCounter;
+    }
+    
+}
+
+void CitationDuration(int seconds)
+{
+    if ((framesCounter - SenequeStruct.LastCitationFrame) > 60)
+    {
+        SenequeStruct.isCitation = false;
+        SenequeStruct.indexCitation = GetRandomValue(0, (sizeof(CitationsSeneque) / sizeof(CitationsSeneque[0])));
+    }
 }
 
 // Update game (one frame)
@@ -281,15 +311,11 @@ void UpdateGame(void)
                 snake[counterTail].position = snakePosition[counterTail - 1];
                 counterTail += 1;
                 fruit.active = false;
-                SenequeStruct.isCitation = true;
-                SenequeStruct.LastCitationFrame = framesCounter;
+
+                IfCollisionSendCitation();
             }
 
-            if ((framesCounter - SenequeStruct.LastCitationFrame) > 60)
-            {
-                SenequeStruct.isCitation = false;
-                SenequeStruct.indexCitation = GetRandomValue(0, 5);
-            }
+            CitationDuration(1); 
 
             framesCounter++;
         }
@@ -305,12 +331,12 @@ void UpdateGame(void)
         if (IsKeyPressed('I'))
         {
             gameOver = true;
-            GameState = GV_MENU;
+            GameState = GS_MENU;
         }
     }
 }
 
-// Draw Menu (if GV_MENU)
+// Draw Menu (if GS_MENU)
 void DrawMenu(void)
 {
     ClearBackground(RAYWHITE);
@@ -324,16 +350,29 @@ void DrawMenu(void)
 
     // Wait for user input
     if (IsKeyPressed('1') == true)
-        GameState = GV_NORMAL;
+        GameState = GS_NORMAL;
 
     if (IsKeyPressed('2') == true)
-        GameState = GV_SENEQUE;
+        GameState = GS_SENEQUE;
 
     if (IsKeyPressed('3') == true)
-        GameState = GV_SNARE;
+        GameState = GS_SNARE;
 
     if (IsKeyPressed('4') == true)
-        GameState = GV_SNACK;
+        GameState = GS_SNACK;
+}
+
+void DrawSeneque(void)
+{
+    if (GameState == GS_SENEQUE)
+    {
+        DrawTexture(SenequeStruct.SenequeHeadImage, snake[0].position.x, snake[0].position.y, WHITE);
+
+        if (SenequeStruct.isCitation == true)
+        {
+            DrawText(CitationsSeneque[SenequeStruct.indexCitation], screenWidth / 2 - MeasureText(CitationsSeneque[SenequeStruct.indexCitation], 21) / 2, screenHeight / 2 - 21, 23, DARKBLUE);
+        }
+    }
 }
 
 // Draw game (one frame)
@@ -343,11 +382,11 @@ void DrawGame(void)
 
     ClearBackground(RAYWHITE);
 
-    if (GameState == GV_MENU)
+    if (GameState == GS_MENU)
     {
         DrawMenu();
     }
-    else if (!gameOver && (GameState != GV_MENU))
+    else if (!gameOver && (GameState != GS_MENU))
     {
         // Draw grid lines
         for (int i = 0; i < screenWidth / SQUARE_SIZE + 1; i++)
@@ -364,16 +403,6 @@ void DrawGame(void)
         for (int i = 0; i < counterTail; i++)
             DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
 
-        if (GameState == GV_SENEQUE)
-        {
-            DrawTexture(SenequeStruct.SenequeHeadImage, snake[0].position.x, snake[0].position.y, WHITE);
-
-            if (SenequeStruct.isCitation == true)
-            {
-                DrawText(CitationsSeneque[SenequeStruct.indexCitation], screenWidth / 2 - MeasureText(CitationsSeneque[SenequeStruct.indexCitation], 21) / 2, screenHeight / 2 - 21, 23, DARKBLUE);
-            }
-        }
-
         // Draw fruit to pick
         DrawRectangleV(fruit.position, fruit.size, fruit.color);
 
@@ -382,6 +411,7 @@ void DrawGame(void)
     }
     else
     {
+        if (GameState == GS_SENEQUE) DrawText("C'EST PAS GRAVE SENEQU'UN JEU !", GetScreenWidth() / 2 - MeasureText("C'EST PAS GRAVE SENEQU'UN JEU !", 20) / 2, GetScreenHeight() / 2 - 100, 20, GRAY);
         DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("OR PRESS [I] TO GO BACK TO MENU", GetScreenWidth() / 2 - MeasureText("OR PRESS [I] TO GO BACK TO MENU", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
     }
