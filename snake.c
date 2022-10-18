@@ -1,42 +1,44 @@
 /*******************************************************************************************
-*
-*   raylib - classic game: snake
-*
-*   Sample game developed by Ian Eito, Albert Martos and Ramon Santamaria
-*
-*   This game has been created using raylib v1.3 (www.raylib.com)
-*   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
-*
-*   Copyright (c) 2015 Ramon Santamaria (@raysan5)
-*
-********************************************************************************************/
+ *
+ *   raylib - classic game: snake
+ *
+ *   Sample game developed by Ian Eito, Albert Martos and Ramon Santamaria
+ *
+ *   This game has been created using raylib v1.3 (www.raylib.com)
+ *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
+ *
+ *   Copyright (c) 2015 Ramon Santamaria (@raysan5)
+ *
+ ********************************************************************************************/
 
 #include "raylib.h"
 #include <string.h>
 
 #if defined(PLATFORM_WEB)
-    #include <emscripten/emscripten.h>
+#include <emscripten/emscripten.h>
 #endif
 
 //----------------------------------------------------------------------------------
 // Some Defines
 //----------------------------------------------------------------------------------
-#define SNAKE_LENGTH   256
-#define SQUARE_SIZE     31
+#define SNAKE_LENGTH 256
+#define SQUARE_SIZE 31
 
 #define MENU_CHOICE_FONT_SIZE 50
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
-typedef struct Snake {
+typedef struct Snake
+{
     Vector2 position;
     Vector2 size;
     Vector2 speed;
     Color color;
 } Snake;
 
-typedef struct Food {
+typedef struct Food
+{
     Vector2 position;
     Vector2 size;
     bool active;
@@ -53,25 +55,25 @@ static int framesCounter = 0;
 static bool gameOver = false;
 static bool pause = false;
 
-static Food fruit = { 0 };
-static Snake snake[SNAKE_LENGTH] = { 0 };
-static Vector2 snakePosition[SNAKE_LENGTH] = { 0 };
+static Food fruit = {0};
+static Snake snake[SNAKE_LENGTH] = {0};
+static Vector2 snakePosition[SNAKE_LENGTH] = {0};
 static bool allowMove = false;
-static Vector2 offset = { 0 };
+static Vector2 offset = {0};
 static int counterTail = 0;
 
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
 //------------------------------------------------------------------------------------
-static void InitGame(void);         // Initialize game
-static void UpdateGame(void);       // Update game (one frame)
-static void DrawGame(void);         // Draw game (one frame)
-static void UnloadGame(void);       // Unload game
-static void UpdateDrawFrame(void);  // Update and Draw (one frame)
+static void InitGame(void);        // Initialize game
+static void UpdateGame(void);      // Update game (one frame)
+static void DrawGame(void);        // Draw game (one frame)
+static void UnloadGame(void);      // Unload game
+static void UpdateDrawFrame(void); // Update and Draw (one frame)
 
 static void DrawMenu(void);
 
-typedef enum GAMESTATE 
+typedef enum GAMESTATE
 {
     GV_MENU,
 
@@ -85,7 +87,7 @@ typedef enum GAMESTATE
 
 } GAMESTATE;
 
-typedef struct 
+typedef struct
 {
     Texture2D SenequeHeadImage;
 
@@ -98,16 +100,16 @@ typedef struct
 
 static GAMESTATE GameState = GV_MENU;
 
-static SENEQUE SenequeStruct = { 0 };
+static SENEQUE SenequeStruct = {0};
 
-static char *CitationsSeneque[] = { 
-"Le travail est l'aliment des âmes nobles.",
-"C'est pendant l'orage qu'on connait le pilote.",
-"Toute la vie n'est qu'un voyage vers la mort.",
-"Hâte toi de bien vivre et songe que chaque jour est à lui seul une vie.",
-"Je préfère modérer mes joies que réprimer mes douleurs.",
-"Il ne vaut mieux ne pas commencer que de cesser" };
-static char GameOverSeneque[] = { "L'erreur n'est pas un crime." };
+static char *CitationsSeneque[] = {
+    "Le travail est l'aliment des âmes nobles.",
+    "C'est pendant l'orage qu'on connait le pilote.",
+    "Toute la vie n'est qu'un voyage vers la mort.",
+    "Hâte toi de bien vivre et songe que chaque jour est à lui seul une vie.",
+    "Je préfère modérer mes joies que réprimer mes douleurs.",
+    "Il ne vaut mieux ne pas commencer que de cesser"};
+static char GameOverSeneque[] = {"L'erreur n'est pas un crime."};
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -127,7 +129,7 @@ int main(void)
     //--------------------------------------------------------------------------------------
 
     // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    while (!WindowShouldClose()) // Detect window close button or ESC key
     {
         // Update and Draw
         //----------------------------------------------------------------------------------
@@ -137,9 +139,9 @@ int main(void)
 #endif
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadGame();         // Unload loaded data (textures, sounds, models...)
+    UnloadGame(); // Unload loaded data (textures, sounds, models...)
 
-    CloseWindow();        // Close window and OpenGL context
+    CloseWindow(); // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
     return 0;
@@ -152,7 +154,7 @@ int main(void)
 // Initialize game variables
 void InitGame(void)
 {
-    Image TempImage = { 0 };
+    Image TempImage = {0};
 
     framesCounter = 0;
     gameOver = false;
@@ -161,25 +163,27 @@ void InitGame(void)
     counterTail = 1;
     allowMove = false;
 
-    offset.x = screenWidth%SQUARE_SIZE;
-    offset.y = screenHeight%SQUARE_SIZE;
+    offset.x = screenWidth % SQUARE_SIZE;
+    offset.y = screenHeight % SQUARE_SIZE;
 
     for (int i = 0; i < SNAKE_LENGTH; i++)
     {
-        snake[i].position = (Vector2){ offset.x/2, offset.y/2 };
-        snake[i].size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
-        snake[i].speed = (Vector2){ SQUARE_SIZE, 0 };
+        snake[i].position = (Vector2){offset.x / 2, offset.y / 2};
+        snake[i].size = (Vector2){SQUARE_SIZE, SQUARE_SIZE};
+        snake[i].speed = (Vector2){SQUARE_SIZE, 0};
 
-        if (i == 0) snake[i].color = DARKBLUE;
-        else snake[i].color = BLUE;
+        if (i == 0)
+            snake[i].color = DARKBLUE;
+        else
+            snake[i].color = BLUE;
     }
 
     for (int i = 0; i < SNAKE_LENGTH; i++)
     {
-        snakePosition[i] = (Vector2){ 0.0f, 0.0f };
+        snakePosition[i] = (Vector2){0.0f, 0.0f};
     }
 
-    fruit.size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
+    fruit.size = (Vector2){SQUARE_SIZE, SQUARE_SIZE};
     fruit.color = SKYBLUE;
     fruit.active = false;
 
@@ -193,36 +197,38 @@ void UpdateGame(void)
 {
     if (!gameOver)
     {
-        if (IsKeyPressed('P')) pause = !pause;
+        if (IsKeyPressed('P'))
+            pause = !pause;
 
         if (!pause)
         {
             // Player control
             if (IsKeyPressed(KEY_RIGHT) && (snake[0].speed.x == 0) && allowMove)
             {
-                snake[0].speed = (Vector2){ SQUARE_SIZE, 0 };
+                snake[0].speed = (Vector2){SQUARE_SIZE, 0};
                 allowMove = false;
             }
             if (IsKeyPressed(KEY_LEFT) && (snake[0].speed.x == 0) && allowMove)
             {
-                snake[0].speed = (Vector2){ -SQUARE_SIZE, 0 };
+                snake[0].speed = (Vector2){-SQUARE_SIZE, 0};
                 allowMove = false;
             }
             if (IsKeyPressed(KEY_UP) && (snake[0].speed.y == 0) && allowMove)
             {
-                snake[0].speed = (Vector2){ 0, -SQUARE_SIZE };
+                snake[0].speed = (Vector2){0, -SQUARE_SIZE};
                 allowMove = false;
             }
             if (IsKeyPressed(KEY_DOWN) && (snake[0].speed.y == 0) && allowMove)
             {
-                snake[0].speed = (Vector2){ 0, SQUARE_SIZE };
+                snake[0].speed = (Vector2){0, SQUARE_SIZE};
                 allowMove = false;
             }
 
             // Snake movement
-            for (int i = 0; i < counterTail; i++) snakePosition[i] = snake[i].position;
+            for (int i = 0; i < counterTail; i++)
+                snakePosition[i] = snake[i].position;
 
-            if ((framesCounter%5) == 0)
+            if ((framesCounter % 5) == 0)
             {
                 for (int i = 0; i < counterTail; i++)
                 {
@@ -232,7 +238,8 @@ void UpdateGame(void)
                         snake[0].position.y += snake[0].speed.y;
                         allowMove = true;
                     }
-                    else snake[i].position = snakePosition[i-1];
+                    else
+                        snake[i].position = snakePosition[i - 1];
                 }
             }
 
@@ -247,20 +254,21 @@ void UpdateGame(void)
             // Collision with yourself
             for (int i = 1; i < counterTail; i++)
             {
-                if ((snake[0].position.x == snake[i].position.x) && (snake[0].position.y == snake[i].position.y)) gameOver = true;
+                if ((snake[0].position.x == snake[i].position.x) && (snake[0].position.y == snake[i].position.y))
+                    gameOver = true;
             }
 
             // Fruit position calculation
             if (!fruit.active)
             {
                 fruit.active = true;
-                fruit.position = (Vector2){ GetRandomValue(0, (screenWidth/SQUARE_SIZE) - 1)*SQUARE_SIZE + offset.x/2, GetRandomValue(0, (screenHeight/SQUARE_SIZE) - 1)*SQUARE_SIZE + offset.y/2 };
+                fruit.position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
 
                 for (int i = 0; i < counterTail; i++)
                 {
                     while ((fruit.position.x == snake[i].position.x) && (fruit.position.y == snake[i].position.y))
                     {
-                        fruit.position = (Vector2){ GetRandomValue(0, (screenWidth/SQUARE_SIZE) - 1)*SQUARE_SIZE + offset.x/2, GetRandomValue(0, (screenHeight/SQUARE_SIZE) - 1)*SQUARE_SIZE + offset.y/2 };
+                        fruit.position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
                         i = 0;
                     }
                 }
@@ -310,19 +318,22 @@ void DrawMenu(void)
     // Draw text
     DrawText("Choose your game !", (GetScreenWidth() - MeasureText("Choose your game !", 50)) / 2, 40, 50, LIGHTGRAY);
     DrawText("\'1\'. SNAKE", 50, 140, MENU_CHOICE_FONT_SIZE, LIGHTGRAY);
-    DrawText("\'2\'. SENEQUE", 400 , 140, MENU_CHOICE_FONT_SIZE, LIGHTGRAY);
+    DrawText("\'2\'. SENEQUE", 400, 140, MENU_CHOICE_FONT_SIZE, LIGHTGRAY);
     DrawText("\'3\'. SNARE", 50, 300, MENU_CHOICE_FONT_SIZE, LIGHTGRAY);
     DrawText("\'4\'. SNACK", 400, 300, MENU_CHOICE_FONT_SIZE, LIGHTGRAY);
 
     // Wait for user input
-    if (IsKeyPressed('1') == true) GameState = GV_NORMAL;
+    if (IsKeyPressed('1') == true)
+        GameState = GV_NORMAL;
 
-    if (IsKeyPressed('2') == true) GameState = GV_SENEQUE;
+    if (IsKeyPressed('2') == true)
+        GameState = GV_SENEQUE;
 
-    if (IsKeyPressed('3') == true) GameState = GV_SNARE;
+    if (IsKeyPressed('3') == true)
+        GameState = GV_SNARE;
 
-    if (IsKeyPressed('4') == true) GameState = GV_SNACK;
-
+    if (IsKeyPressed('4') == true)
+        GameState = GV_SNACK;
 }
 
 // Draw game (one frame)
@@ -330,48 +341,50 @@ void DrawGame(void)
 {
     BeginDrawing();
 
-        ClearBackground(RAYWHITE);
+    ClearBackground(RAYWHITE);
 
-        if (GameState == GV_MENU)
+    if (GameState == GV_MENU)
+    {
+        DrawMenu();
+    }
+    else if (!gameOver && (GameState != GV_MENU))
+    {
+        // Draw grid lines
+        for (int i = 0; i < screenWidth / SQUARE_SIZE + 1; i++)
         {
-            DrawMenu();
+            DrawLineV((Vector2){SQUARE_SIZE * i + offset.x / 2, offset.y / 2}, (Vector2){SQUARE_SIZE * i + offset.x / 2, screenHeight - offset.y / 2}, LIGHTGRAY);
         }
-        else if (!gameOver && (GameState != GV_MENU))
+
+        for (int i = 0; i < screenHeight / SQUARE_SIZE + 1; i++)
         {
-            // Draw grid lines
-            for (int i = 0; i < screenWidth/SQUARE_SIZE + 1; i++)
-            {
-                DrawLineV((Vector2){SQUARE_SIZE*i + offset.x/2, offset.y/2}, (Vector2){SQUARE_SIZE*i + offset.x/2, screenHeight - offset.y/2}, LIGHTGRAY);
-            }
-
-            for (int i = 0; i < screenHeight/SQUARE_SIZE + 1; i++)
-            {
-                DrawLineV((Vector2){offset.x/2, SQUARE_SIZE*i + offset.y/2}, (Vector2){screenWidth - offset.x/2, SQUARE_SIZE*i + offset.y/2}, LIGHTGRAY);
-            }
-
-            // Draw snake
-            for (int i = 0; i < counterTail; i++) DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
-
-            if (GameState == GV_SENEQUE)
-            {
-                DrawTexture(SenequeStruct.SenequeHeadImage, snake[0].position.x, snake[0].position.y, WHITE);
-
-                if (SenequeStruct.isCitation == true)
-                {
-                    DrawText(CitationsSeneque[SenequeStruct.indexCitation], screenWidth/2 - MeasureText(CitationsSeneque[SenequeStruct.indexCitation], 23)/2, screenHeight/2 - 23, 23, LIGHTGRAY);
-                }
-            }
-
-            // Draw fruit to pick
-            DrawRectangleV(fruit.position, fruit.size, fruit.color);
-
-            if (pause) DrawText("GAME PAUSED", screenWidth/2 - MeasureText("GAME PAUSED", 40)/2, screenHeight/2 - 40, 40, GRAY);
+            DrawLineV((Vector2){offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, (Vector2){screenWidth - offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, LIGHTGRAY);
         }
-        else 
+
+        // Draw snake
+        for (int i = 0; i < counterTail; i++)
+            DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
+
+        if (GameState == GV_SENEQUE)
         {
-            DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
-            DrawText("OR PRESS [I] TO GO BACK TO MENU", GetScreenWidth()/2 - MeasureText("OR PRESS [I] TO GO BACK TO MENU", 20)/2, GetScreenHeight()/2, 20, GRAY);
+            DrawTexture(SenequeStruct.SenequeHeadImage, snake[0].position.x, snake[0].position.y, WHITE);
+
+            if (SenequeStruct.isCitation == true)
+            {
+                DrawText(CitationsSeneque[SenequeStruct.indexCitation], screenWidth / 2 - MeasureText(CitationsSeneque[SenequeStruct.indexCitation], 21) / 2, screenHeight / 2 - 21, 23, DARKBLUE);
+            }
         }
+
+        // Draw fruit to pick
+        DrawRectangleV(fruit.position, fruit.size, fruit.color);
+
+        if (pause)
+            DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
+    }
+    else
+    {
+        DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
+        DrawText("OR PRESS [I] TO GO BACK TO MENU", GetScreenWidth() / 2 - MeasureText("OR PRESS [I] TO GO BACK TO MENU", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
+    }
 
     EndDrawing();
 }
@@ -379,7 +392,7 @@ void DrawGame(void)
 // Unload game variables
 void UnloadGame(void)
 {
-    // TODO: Unload all dynamic loaded data (textures, sounds, models...)
+    UnloadTexture(SenequeStruct.SenequeHeadImage);
 }
 
 // Update and Draw (one frame)
