@@ -25,6 +25,7 @@
 #define SQUARE_SIZE 31
 
 #define MENU_CHOICE_FONT_SIZE 50
+#define MAX_SNARE_COUNT 30
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -62,6 +63,8 @@ static bool allowMove = false;
 static Vector2 offset = {0};
 static int counterTail = 0;
 
+static bool isFruit = true;
+
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
 //------------------------------------------------------------------------------------
@@ -75,6 +78,8 @@ static void DrawMenu(void);
 static void IfCollisionSendCitation(void);
 static void CitationDuration(int seconds);
 static void DrawSeneque(void);
+static void DrawSnare(void);
+static void PlaceSnares(void);
 
 typedef enum GAMESTATE
 {
@@ -110,9 +115,18 @@ typedef struct Snare
     Color color;
 } Snare;
 
+typedef struct 
+{
+    Snare snares[MAX_SNARE_COUNT]; 
+    // on ne peut pas utiliser de malloc en temps réel on ne sait pas combien de temps cela peut prendre
+
+    unsigned int nbCurrentCount;
+
+} GAME_SNARE;
+
 static GAMESTATE GameState = GS_MENU;
 
-static GAME_SENEQUE SenequeStruct = {0};
+static GAME_SENEQUE GameSeneque = { 0 };
 
 static char *CitationsSeneque[] = {
 "Le travail est l'aliment des âmes nobles.",
@@ -130,7 +144,7 @@ static char *CitationsSeneque[] = {
 "Ils vomissent pour manger, ils mangent pour vomir.",
 "L'erreur n'est pas un crime."};
 
-static Snare snare = { 0 };
+static GAME_SNARE GameSnare = { 0 };
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -172,6 +186,34 @@ int main(void)
 // Module Functions Definitions (local)
 //------------------------------------------------------------------------------------
 
+void PlaceSnares(void)
+{
+    int i = 0, j = 0;
+
+    GameSnare.nbCurrentCount = 0;
+
+    for (i = 0; i < MAX_SNARE_COUNT; i++)
+    {        
+        GameSnare.snares[i].size = (Vector2) { SQUARE_SIZE, SQUARE_SIZE };
+        GameSnare.snares[i].color = DARKPURPLE;        
+
+        GameSnare.snares[i].active = true;
+
+        GameSnare.snares[i].position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
+
+        for (j = 0; j < MAX_SNARE_COUNT; j++)
+        {
+            if (i == j) break;
+        
+            while ((GameSnare.snares[i].position.x == GameSnare.snares[j].position.x) && (GameSnare.snares[i].position.y == GameSnare.snares[j].position.y))
+            {
+                GameSnare.snares[i].position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
+                j = 0;
+            }
+        }
+    }   
+}
+
 // Initialize game variables
 void InitGame(void)
 {
@@ -208,13 +250,11 @@ void InitGame(void)
     fruit.color = SKYBLUE;
     fruit.active = false;
 
-    snare.size = (Vector2) { SQUARE_SIZE, SQUARE_SIZE };
-    snare.color = DARKPURPLE;
-    snare.active = false;
+    PlaceSnares();
 
     TempImage = LoadImage("assets/seneque.png");
     ImageResize(&TempImage, 31, 31);
-    SenequeStruct.SenequeHeadImage = LoadTextureFromImage(TempImage);
+    GameSeneque.SenequeHeadImage = LoadTextureFromImage(TempImage);
     UnloadImage(TempImage);
 }
 
@@ -222,17 +262,17 @@ void IfCollisionSendCitation(void)
 {
     if (GameState == GS_SENEQUE)
     {
-        SenequeStruct.isCitation = true;
-        SenequeStruct.LastCitationFrame = framesCounter;
+        GameSeneque.isCitation = true;
+        GameSeneque.LastCitationFrame = framesCounter;
     }
 }
 
 void CitationDuration(int seconds)
 {
-    if ((framesCounter - SenequeStruct.LastCitationFrame) > 60)
+    if ((framesCounter - GameSeneque.LastCitationFrame) > 60)
     {
-        SenequeStruct.isCitation = false;
-        SenequeStruct.indexCitation = GetRandomValue(0, (sizeof(CitationsSeneque) / sizeof(CitationsSeneque[0])));
+        GameSeneque.isCitation = false;
+        GameSeneque.indexCitation = GetRandomValue(0, (sizeof(CitationsSeneque) / sizeof(CitationsSeneque[0])));
     }
 }
 
@@ -269,8 +309,7 @@ void UpdateGame(void)
             }
 
             // Snake movement
-            for (int i = 0; i < counterTail; i++)
-                snakePosition[i] = snake[i].position;
+            for (int i = 0; i < counterTail; i++) snakePosition[i] = snake[i].position;
 
             if ((framesCounter % 5) == 0)
             {
@@ -302,8 +341,20 @@ void UpdateGame(void)
                     gameOver = true;
             }
 
+            switch(GameState)
+            {
+                case GS_SNARE:
+                {
+                    isFruit = false;
+                }
+                break;
+                default:
+                    isFruit = true;
+                break;
+            }
+
             // Fruit position calculation
-            if (!fruit.active)
+            if (isFruit && !fruit.active)
             {
                 fruit.active = true;
                 fruit.position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
@@ -314,26 +365,6 @@ void UpdateGame(void)
                     {
                         fruit.position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
                         i = 0;
-                    }
-                }
-            }
-            
-            if (GameState == GS_SNARE)
-            {
-                // Snare position calculation
-                if (!snare.active)
-                {
-                    snare.active = true;
-                    snare.position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
-
-                    for (int i = 0; i < counterTail; i++)
-                    {
-                        while (((snare.position.x == snake[i].position.x) && (snare.position.y == snake[i].position.y))
-                        && ((snare.position.x == fruit.position.x) && snare.position.y == fruit.position.y))
-                        {
-                            snare.position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
-                            i = 0;
-                        }
                     }
                 }
             }
@@ -349,11 +380,21 @@ void UpdateGame(void)
                 IfCollisionSendCitation();
             }
 
-            // Collision with snare
-            if ((snake[0].position.x < (snare.position.x + fruit.size.x) && (snake[0].position.x + snake[0].size.x) > snare.position.x) &&
-                (snake[0].position.y < (snare.position.y + fruit.size.y) && (snake[0].position.y + snake[0].size.y) > snare.position.y))
+            if (GameState == GS_SNARE)
             {
-                gameOver = true;                
+                for (int i = 0; i < GameSnare.nbCurrentCount; i++)
+                {
+                    if ((snake[0].position.x < (GameSnare.snares[i].position.x + GameSnare.snares[i].size.x) && (snake[0].position.x + snake[0].size.x) > GameSnare.snares[i].position.x) &&
+                        (snake[0].position.y < (GameSnare.snares[i].position.y + GameSnare.snares[i].size.y) && (snake[0].position.y + snake[0].size.y) > GameSnare.snares[i].position.y))
+                    {
+                        gameOver = true;                
+                    }
+                }
+            }
+
+            if ((framesCounter % 60 == 0) && (GameSnare.nbCurrentCount < MAX_SNARE_COUNT)) 
+            {
+                GameSnare.nbCurrentCount++;
             }
 
             CitationDuration(1); 
@@ -407,11 +448,23 @@ void DrawSeneque(void)
 {
     if (GameState == GS_SENEQUE)
     {
-        DrawTexture(SenequeStruct.SenequeHeadImage, snake[0].position.x, snake[0].position.y, WHITE);
+        DrawTexture(GameSeneque.SenequeHeadImage, snake[0].position.x, snake[0].position.y, WHITE);
 
-        if (SenequeStruct.isCitation == true)
+        if (GameSeneque.isCitation == true)
         {
-            DrawText(CitationsSeneque[SenequeStruct.indexCitation], screenWidth / 2 - MeasureText(CitationsSeneque[SenequeStruct.indexCitation], 21) / 2, screenHeight / 2 - 21, 23, DARKBLUE);
+            DrawText(CitationsSeneque[GameSeneque.indexCitation], screenWidth / 2 - MeasureText(CitationsSeneque[GameSeneque.indexCitation], 21) / 2, screenHeight / 2 - 21, 23, DARKBLUE);
+        }
+    }
+}
+
+void DrawSnares(void)
+{
+    int i = 0;
+    if (GameState == GS_SNARE)
+    {
+        for (i = 0; i < GameSnare.nbCurrentCount; i++)
+        {
+            DrawRectangleV(GameSnare.snares[i].position, GameSnare.snares[i].size, GameSnare.snares[i].color);
         }
     }
 }
@@ -429,7 +482,7 @@ void DrawGame(void)
     }
     else if (!gameOver && (GameState != GS_MENU))
     {
-        // Draw grid lines
+        // Draw grid lines : always
         for (int i = 0; i < screenWidth / SQUARE_SIZE + 1; i++)
         {
             DrawLineV((Vector2){SQUARE_SIZE * i + offset.x / 2, offset.y / 2}, (Vector2){SQUARE_SIZE * i + offset.x / 2, screenHeight - offset.y / 2}, LIGHTGRAY);
@@ -440,18 +493,18 @@ void DrawGame(void)
             DrawLineV((Vector2){offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, (Vector2){screenWidth - offset.x / 2, SQUARE_SIZE * i + offset.y / 2}, LIGHTGRAY);
         }
 
-        // Draw snake
-        for (int i = 0; i < counterTail; i++)
-            DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
+        // Draw snake : always
+        for (int i = 0; i < counterTail; i++) DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
 
-        // Draw fruit to pick
-        DrawRectangleV(fruit.position, fruit.size, fruit.color);
-
-        // Draw Snare 
-        if (GameState == GS_SNARE)
+        if (GameState != GS_SNARE)
         {
-            DrawRectangleV(snare.position, snare.size, snare.color);
+            // Draw fruit to pick
+            DrawRectangleV(fruit.position, fruit.size, fruit.color);
         }
+
+        DrawSnares();
+
+        DrawSeneque();
 
         if (pause)
             DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
@@ -469,7 +522,7 @@ void DrawGame(void)
 // Unload game variables
 void UnloadGame(void)
 {
-    UnloadTexture(SenequeStruct.SenequeHeadImage);
+    UnloadTexture(GameSeneque.SenequeHeadImage);
 }
 
 // Update and Draw (one frame)
