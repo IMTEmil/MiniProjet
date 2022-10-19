@@ -94,7 +94,7 @@ typedef struct Snare
 
     SNARE_STATE state;
 
-    unsigned int nFramesLifeStart;
+    unsigned int nSeconds;
 
 } Snare;
 
@@ -105,7 +105,6 @@ typedef struct
     unsigned int nbCurrentCount;
 
 } GAME_SNARE;
-
 
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
@@ -415,7 +414,8 @@ void UpdateGame(void)
             {
                 for (int i = 0; i < GameSnare.nbCurrentCount; i++)
                 {
-                    if (GameSnare.snares[i].active == false) break;
+                    if (GameSnare.snares[i].active == false) continue;
+                    if (GameSnare.snares[i].state != SNARE_CHARGED) continue;
                     if ((snake[0].position.x < (GameSnare.snares[i].position.x + GameSnare.snares[i].size.x) && (snake[0].position.x + snake[0].size.x) > GameSnare.snares[i].position.x) &&
                         (snake[0].position.y < (GameSnare.snares[i].position.y + GameSnare.snares[i].size.y) && (snake[0].position.y + snake[0].size.y) > GameSnare.snares[i].position.y))
                     {
@@ -423,33 +423,31 @@ void UpdateGame(void)
                     }
                 }
             }
-
+            
             if ((framesCounter % 60 == 0) && (GameSnare.nbCurrentCount < SNARE_COUNT)) 
             {
                 GameSnare.snares[GameSnare.nbCurrentCount].active = true;
-                GameSnare.snares[GameSnare.nbCurrentCount].nFramesLifeStart = framesCounter;
+
+                GameSnare.snares[GameSnare.nbCurrentCount].nSeconds = (framesCounter / 60);
 
                 for (unsigned int i = 0; i < GameSnare.nbCurrentCount; i++)
                 {   
-                    if (GameSnare.snares[i].state == SNARE_CHARGED 
-                        && (framesCounter - GameSnare.snares[i].nFramesLifeStart) < 60 * 4 == 0)
+                    if (((framesCounter / 60) - GameSnare.snares[i].nSeconds) > 15)
                     {
                         GameSnare.snares[i].active = false;
                         GameSnare.snares[i].state = SNARE_START;
-                    }
-
-                    if (GameSnare.snares[i].state == SNARE_START) GameSnare.snares[i].state++;
-
-                    else if (GameSnare.snares[i].state == SNARE_LOADING) GameSnare.snares[i].state++;
+                    }   
+                    else GameSnare.snares[i].state++;
 
                     SnareColorUpdate(&(GameSnare.snares[i]));
                 }
 
                 GameSnare.nbCurrentCount++;
+
+                if (GameSnare.nbCurrentCount == SNARE_COUNT) GameSnare.nbCurrentCount = 0;
             }
 
-            CitationDuration(1); 
-
+            CitationDuration(1);
             framesCounter++;
         }
     }
@@ -515,7 +513,7 @@ void DrawSnares(void)
     {
         for (i = 0; i < GameSnare.nbCurrentCount; i++)
         {
-            if (GameSnare.snares[i].active == false) break;
+            if (GameSnare.snares[i].active == false) continue;
             DrawRectangleV(GameSnare.snares[i].position, GameSnare.snares[i].size, GameSnare.snares[i].color);
         }
     }
