@@ -25,7 +25,7 @@
 #define SQUARE_SIZE 31
 
 #define MENU_CHOICE_FONT_SIZE 50
-#define MAX_SNARE_COUNT 30
+#define SNARE_COUNT 30
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -45,6 +45,67 @@ typedef struct Food
     bool active;
     Color color;
 } Food;
+
+typedef enum GAMESTATE
+{
+    GS_MENU,
+
+    GS_NORMAL,
+
+    GS_SENEQUE,
+
+    GS_SNARE,
+
+    GS_SNACK
+
+} GAMESTATE;
+
+typedef struct
+{
+    Texture2D SenequeHeadImage;
+
+    bool isCitation;
+
+    int indexCitation;
+
+    int LastCitationFrame;
+
+} GAME_SENEQUE;
+
+typedef enum 
+{
+    SNARE_START,
+
+    SNARE_LOADING,
+
+    SNARE_CHARGED
+
+} SNARE_STATE;
+
+typedef struct Snare
+{
+    Vector2 position;
+
+    Vector2 size;
+
+    bool active;
+
+    Color color;
+
+    SNARE_STATE state;
+
+    unsigned int nFramesLifeStart;
+
+} Snare;
+
+typedef struct 
+{
+    Snare snares[SNARE_COUNT];
+
+    unsigned int nbCurrentCount;
+
+} GAME_SNARE;
+
 
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
@@ -80,49 +141,7 @@ static void CitationDuration(int seconds);
 static void DrawSeneque(void);
 static void DrawSnare(void);
 static void PlaceSnares(void);
-
-typedef enum GAMESTATE
-{
-    GS_MENU,
-
-    GS_NORMAL,
-
-    GS_SENEQUE,
-
-    GS_SNARE,
-
-    GS_SNACK
-
-} GAMESTATE;
-
-typedef struct
-{
-    Texture2D SenequeHeadImage;
-
-    bool isCitation;
-
-    int indexCitation;
-
-    int LastCitationFrame;
-
-} GAME_SENEQUE;
-
-typedef struct Snare
-{
-    Vector2 position;
-    Vector2 size;
-    bool active;
-    Color color;
-} Snare;
-
-typedef struct 
-{
-    Snare snares[MAX_SNARE_COUNT]; 
-    // on ne peut pas utiliser de malloc en temps réel on ne sait pas combien de temps cela peut prendre
-
-    unsigned int nbCurrentCount;
-
-} GAME_SNARE;
+static void SnareColorUpdate(Snare *snare);
 
 static GAMESTATE GameState = GS_MENU;
 
@@ -186,22 +205,32 @@ int main(void)
 // Module Functions Definitions (local)
 //------------------------------------------------------------------------------------
 
+void SnareColorUpdate(Snare *snare)
+{
+    if (snare->state == SNARE_START) snare->color = LIGHTGRAY;
+    if (snare->state == SNARE_LOADING) snare->color = PURPLE;
+    if (snare->state == SNARE_CHARGED) snare->color = DARKPURPLE;
+}
+
 void PlaceSnares(void)
 {
     int i = 0, j = 0;
 
     GameSnare.nbCurrentCount = 0;
 
-    for (i = 0; i < MAX_SNARE_COUNT; i++)
+    for (i = 0; i < SNARE_COUNT; i++)
     {        
         GameSnare.snares[i].size = (Vector2) { SQUARE_SIZE, SQUARE_SIZE };
-        GameSnare.snares[i].color = DARKPURPLE;        
 
-        GameSnare.snares[i].active = true;
+        SnareColorUpdate(&(GameSnare.snares[i]));     
+
+        GameSnare.snares[i].active = false;
+
+        GameSnare.snares[i].state = SNARE_START;
 
         GameSnare.snares[i].position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
 
-        for (j = 0; j < MAX_SNARE_COUNT; j++)
+        for (j = 0; j < SNARE_COUNT; j++)
         {
             if (i == j) break;
         
@@ -367,6 +396,7 @@ void UpdateGame(void)
                         i = 0;
                     }
                 }
+
             }
 
             // Collision
@@ -380,10 +410,12 @@ void UpdateGame(void)
                 IfCollisionSendCitation();
             }
 
+            // Snare collision
             if (GameState == GS_SNARE)
             {
                 for (int i = 0; i < GameSnare.nbCurrentCount; i++)
                 {
+                    if (GameSnare.snares[i].active == false) break;
                     if ((snake[0].position.x < (GameSnare.snares[i].position.x + GameSnare.snares[i].size.x) && (snake[0].position.x + snake[0].size.x) > GameSnare.snares[i].position.x) &&
                         (snake[0].position.y < (GameSnare.snares[i].position.y + GameSnare.snares[i].size.y) && (snake[0].position.y + snake[0].size.y) > GameSnare.snares[i].position.y))
                     {
@@ -392,8 +424,27 @@ void UpdateGame(void)
                 }
             }
 
-            if ((framesCounter % 60 == 0) && (GameSnare.nbCurrentCount < MAX_SNARE_COUNT)) 
+            if ((framesCounter % 60 == 0) && (GameSnare.nbCurrentCount < SNARE_COUNT)) 
             {
+                GameSnare.snares[GameSnare.nbCurrentCount].active = true;
+                GameSnare.snares[GameSnare.nbCurrentCount].nFramesLifeStart = framesCounter;
+
+                for (unsigned int i = 0; i < GameSnare.nbCurrentCount; i++)
+                {   
+                    if (GameSnare.snares[i].state == SNARE_CHARGED 
+                        && (framesCounter - GameSnare.snares[i].nFramesLifeStart) < 60 * 4 == 0)
+                    {
+                        GameSnare.snares[i].active = false;
+                        GameSnare.snares[i].state = SNARE_START;
+                    }
+
+                    if (GameSnare.snares[i].state == SNARE_START) GameSnare.snares[i].state++;
+
+                    else if (GameSnare.snares[i].state == SNARE_LOADING) GameSnare.snares[i].state++;
+
+                    SnareColorUpdate(&(GameSnare.snares[i]));
+                }
+
                 GameSnare.nbCurrentCount++;
             }
 
@@ -464,6 +515,7 @@ void DrawSnares(void)
     {
         for (i = 0; i < GameSnare.nbCurrentCount; i++)
         {
+            if (GameSnare.snares[i].active == false) break;
             DrawRectangleV(GameSnare.snares[i].position, GameSnare.snares[i].size, GameSnare.snares[i].color);
         }
     }
