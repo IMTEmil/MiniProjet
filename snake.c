@@ -11,8 +11,8 @@
  *
  ********************************************************************************************/
 
-#include "raylib.h"
 #include <string.h>
+#include "projet.h"
 
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -23,9 +23,6 @@
 //----------------------------------------------------------------------------------
 #define SNAKE_LENGTH 256
 #define SQUARE_SIZE 31
-
-#define MENU_CHOICE_FONT_SIZE 50
-#define SNARE_COUNT 30
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -45,66 +42,6 @@ typedef struct Food
     bool active;
     Color color;
 } Food;
-
-typedef enum GAMESTATE
-{
-    GS_MENU,
-
-    GS_NORMAL,
-
-    GS_SENEQUE,
-
-    GS_SNARE,
-
-    GS_SNACK
-
-} GAMESTATE;
-
-typedef struct
-{
-    Texture2D SenequeHeadImage;
-
-    bool isCitation;
-
-    int indexCitation;
-
-    int LastCitationFrame;
-
-} GAME_SENEQUE;
-
-typedef enum 
-{
-    SNARE_START,
-
-    SNARE_LOADING,
-
-    SNARE_CHARGED
-
-} SNARE_STATE;
-
-typedef struct Snare
-{
-    Vector2 position;
-
-    Vector2 size;
-
-    bool active;
-
-    Color color;
-
-    SNARE_STATE state;
-
-    unsigned int nSeconds;
-
-} Snare;
-
-typedef struct 
-{
-    Snare snares[SNARE_COUNT];
-
-    unsigned int nbCurrentCount;
-
-} GAME_SNARE;
 
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
@@ -134,35 +71,9 @@ static void DrawGame(void);        // Draw game (one frame)
 static void UnloadGame(void);      // Unload game
 static void UpdateDrawFrame(void); // Update and Draw (one frame)
 
-static void DrawMenu(void);
-static void IfCollisionSendCitation(void);
-static void CitationDuration(int seconds);
-static void DrawSeneque(void);
-static void DrawSnare(void);
-static void PlaceSnares(void);
-static void SnareColorUpdate(Snare *snare);
-
 static GAMESTATE GameState = GS_MENU;
 
 static GAME_SENEQUE GameSeneque = { 0 };
-
-static char *CitationsSeneque[] = {
-"Le travail est l'aliment des âmes nobles.",
-"C'est pendant l'orage qu'on connait le pilote.",
-"Toute la vie n'est qu'un voyage vers la mort.",
-"Hâte toi de bien vivre et songe que chaque jour est à lui seul une vie.",
-"Je préfère modérer mes joies que réprimer mes douleurs.",
-"Il ne vaut mieux ne pas commencer que de cesser",
-"Un grand exemple ne nait que de la mauvaise fortune.",
-"Il est vaincu sans gloire celui qui est vaincu sans péril.",
-"La parole reflète l'âme.",
-"A quoi perd-on la plus grand partie de sa vie ? à différer.",
-"On est nulle part quand on est partout.",
-"Pendant qu'on la diffère, la vie passe en courant.",
-"Ils vomissent pour manger, ils mangent pour vomir.",
-"L'erreur n'est pas un crime."};
-
-static GAME_SNARE GameSnare = { 0 };
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -204,44 +115,6 @@ int main(void)
 // Module Functions Definitions (local)
 //------------------------------------------------------------------------------------
 
-void SnareColorUpdate(Snare *snare)
-{
-    if (snare->state == SNARE_START) snare->color = LIGHTGRAY;
-    if (snare->state == SNARE_LOADING) snare->color = PURPLE;
-    if (snare->state == SNARE_CHARGED) snare->color = DARKPURPLE;
-}
-
-void PlaceSnares(void)
-{
-    int i = 0, j = 0;
-
-    GameSnare.nbCurrentCount = 0;
-
-    for (i = 0; i < SNARE_COUNT; i++)
-    {        
-        GameSnare.snares[i].size = (Vector2) { SQUARE_SIZE, SQUARE_SIZE };
-
-        SnareColorUpdate(&(GameSnare.snares[i]));     
-
-        GameSnare.snares[i].active = false;
-
-        GameSnare.snares[i].state = SNARE_START;
-
-        GameSnare.snares[i].position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
-
-        for (j = 0; j < SNARE_COUNT; j++)
-        {
-            if (i == j) break;
-        
-            while ((GameSnare.snares[i].position.x == GameSnare.snares[j].position.x) && (GameSnare.snares[i].position.y == GameSnare.snares[j].position.y))
-            {
-                GameSnare.snares[i].position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
-                j = 0;
-            }
-        }
-    }   
-}
-
 // Initialize game variables
 void InitGame(void)
 {
@@ -278,30 +151,12 @@ void InitGame(void)
     fruit.color = SKYBLUE;
     fruit.active = false;
 
-    PlaceSnares();
+    InitSnares(&GameSnare, 0, SNARE_COUNT);
 
     TempImage = LoadImage("assets/seneque.png");
     ImageResize(&TempImage, 31, 31);
     GameSeneque.SenequeHeadImage = LoadTextureFromImage(TempImage);
     UnloadImage(TempImage);
-}
-
-void IfCollisionSendCitation(void)
-{
-    if (GameState == GS_SENEQUE)
-    {
-        GameSeneque.isCitation = true;
-        GameSeneque.LastCitationFrame = framesCounter;
-    }
-}
-
-void CitationDuration(int seconds)
-{
-    if ((framesCounter - GameSeneque.LastCitationFrame) > 60)
-    {
-        GameSeneque.isCitation = false;
-        GameSeneque.indexCitation = GetRandomValue(0, (sizeof(CitationsSeneque) / sizeof(CitationsSeneque[0])));
-    }
 }
 
 // Update game (one frame)
@@ -406,7 +261,7 @@ void UpdateGame(void)
                 counterTail += 1;
                 fruit.active = false;
 
-                IfCollisionSendCitation();
+                IfCollisionSendCitation(&(GameSeneque), framesCounter);
             }
 
             // Snare collision
@@ -447,7 +302,7 @@ void UpdateGame(void)
                 if (GameSnare.nbCurrentCount == SNARE_COUNT) GameSnare.nbCurrentCount = 0;
             }
 
-            CitationDuration(1);
+            displayCitation(&GameSeneque, 1, framesCounter);
             framesCounter++;
         }
     }
