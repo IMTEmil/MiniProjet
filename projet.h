@@ -86,7 +86,21 @@ typedef struct
 
 } GAME_SNARE;
 
+typedef Snare Element;
+
+struct cellule_s {
+	Element val;
+	struct cellule_s* suiv;
+};
+
+typedef struct cellule_s Cellule;
+
+typedef Cellule* Liste;
+
 static GAME_SNARE GameSnare = { 0 };
+
+void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snareList);
+void CloseProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snares);
 
 void DrawMenu(void);
 void IfCollisionSendCitation(GAME_SENEQUE *GameSeneque, int currentFrameNumber);
@@ -99,20 +113,11 @@ void SnareColorUpdate(Snare *snare);
 // ajout d'une partie du code de la liste_chainée que nous avons fait en TP
 // je peux réutiliser le tout en changeant juste le typedef Snare Element
 
-typedef Snare Element;
-
-struct cellule_s {
-	Element val;
-	struct cellule_s* suiv;
-};
-
-typedef struct cellule_s Cellule;
-
-typedef Cellule* Liste;
-
 bool estVide(Liste l);
 
 Liste creer(Element v);
+
+Liste cherche(Element v,Liste l);
 
 Liste ajoutTete(Element v, Liste l);
 
@@ -120,6 +125,6 @@ void detruire(Liste l);
 
 Liste ajoutFin(Element v, Liste l);
 
-Liste retirePremier(Element v, Liste l);
+Liste retirePremierElement(Liste l);
 
 #endif

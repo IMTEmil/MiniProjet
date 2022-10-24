@@ -75,6 +75,8 @@ static GAMESTATE GameState = GS_MENU;
 
 static GAME_SENEQUE GameSeneque = { 0 };
 
+static Liste snares = NULL;
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -118,8 +120,6 @@ int main(void)
 // Initialize game variables
 void InitGame(void)
 {
-    Image TempImage = {0};
-
     framesCounter = 0;
     gameOver = false;
     pause = false;
@@ -153,10 +153,7 @@ void InitGame(void)
 
     InitSnares(&GameSnare, 0, SNARE_COUNT);
 
-    TempImage = LoadImage("assets/seneque.png");
-    ImageResize(&TempImage, 31, 31);
-    GameSeneque.SenequeHeadImage = LoadTextureFromImage(TempImage);
-    UnloadImage(TempImage);
+    InitProjetAddOn(&GameSeneque, snares);
 }
 
 // Update game (one frame)
@@ -427,7 +424,7 @@ void DrawGame(void)
 // Unload game variables
 void UnloadGame(void)
 {
-    UnloadTexture(GameSeneque.SenequeHeadImage);
+    CloseProjetAddOn(&GameSeneque, snares);
 }
 
 // Update and Draw (one frame)

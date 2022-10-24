@@ -7,7 +7,7 @@ void SnareColorUpdate(Snare *snare)
     if (snare->state == SNARE_CHARGED) snare->color = DARKPURPLE;
 }
 
-int InitSnare(GAME_SNARE gameSnare, Snare *snare)
+int InitSnare(Liste snares, Snare *snare)
 {
     Vector2 offset = {0};
     int j = 0;
@@ -33,7 +33,7 @@ int InitSnare(GAME_SNARE gameSnare, Snare *snare)
         }
     }
     
-    SnareColorUpdate(&snare);
+    SnareColorUpdate(snare);
 }
 
 int InitSnares(GAME_SNARE *gameSnare, unsigned int firstIndex, unsigned int lastIndex)
@@ -145,12 +145,35 @@ Liste ajoutFin(Element v, Liste l) {
 	return l;
 }
 
-// compare deux elements
-bool equalsElement(Element e1, Element e2){
-	return e1 == e2;
+Liste retirePremierElement(Liste l) 
+{
+    Liste premierElement = { 0 };
+	if (!estVide(l))
+    {
+        premierElement = l;
+        l = premierElement->suiv;
+        free(premierElement);
+    }
+    return l;
 }
 
-Liste retirePremier(Element v, Liste l) 
+void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snares)
 {
-	return TODO;
+    Image TempImage = { 0 };
+    Snare snare = { 0 };
+
+    TempImage = LoadImage("assets/seneque.png");
+    ImageResize(&TempImage, SQUARE_SIZE, SQUARE_SIZE);
+    gameSeneque->SenequeHeadImage = LoadTextureFromImage(TempImage);
+    UnloadImage(TempImage);
+
+    InitSnare(snares, &snare);
+    snares = creer(snare);
+}
+
+void CloseProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snares)
+{
+    UnloadTexture(gameSeneque->SenequeHeadImage);
+
+    detruire(snares);
 }
