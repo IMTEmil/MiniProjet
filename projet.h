@@ -3,6 +3,8 @@
 
 #include "raylib.h"
 #include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define MENU_CHOICE_FONT_SIZE 50
 #define SNARE_COUNT 30
@@ -84,20 +86,6 @@ typedef struct
 
 } GAME_SNARE;
 
-typedef struct CircularBuffer
-{
-    Snare snares[SNARE_COUNT];
-
-    uint16_t indexLecture;
-
-    uint16_t indexEcriture;
-
-} CircularBuffer ;
-
-void CB_Init(CircularBuffer *cbuffer);
-void CB_Add(CircularBuffer *cbuffer, Snare *snare);
-Snare *CB_Dequeue(CircularBuffer *cbuffer)
-
 static GAME_SNARE GameSnare = { 0 };
 
 void DrawMenu(void);
@@ -107,5 +95,31 @@ void DrawSeneque(void);
 void DrawSnare(void);
 int InitSnares(GAME_SNARE *gameSnare, unsigned int firstIndex, unsigned int lastIndex);
 void SnareColorUpdate(Snare *snare);
+
+// ajout d'une partie du code de la liste_chainée que nous avons fait en TP
+// je peux réutiliser le tout en changeant juste le typedef Snare Element
+
+typedef Snare Element;
+
+struct cellule_s {
+	Element val;
+	struct cellule_s* suiv;
+};
+
+typedef struct cellule_s Cellule;
+
+typedef Cellule* Liste;
+
+bool estVide(Liste l);
+
+Liste creer(Element v);
+
+Liste ajoutTete(Element v, Liste l);
+
+void detruire(Liste l);
+
+Liste ajoutFin(Element v, Liste l);
+
+Liste retirePremier(Element v, Liste l);
 
 #endif
