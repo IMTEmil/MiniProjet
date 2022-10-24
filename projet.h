@@ -84,14 +84,19 @@ typedef struct
 
 } GAME_SNARE;
 
-typedef struct BufferCirculaire
+typedef struct CircularBuffer
 {
     Snare snares[SNARE_COUNT];
 
     uint16_t indexLecture;
 
     uint16_t indexEcriture;
-} BufferCirculaire ;
+
+} CircularBuffer ;
+
+void CB_Init(CircularBuffer *cbuffer);
+void CB_Add(CircularBuffer *cbuffer, Snare *snare);
+Snare *CB_Dequeue(CircularBuffer *cbuffer)
 
 static GAME_SNARE GameSnare = { 0 };
 
