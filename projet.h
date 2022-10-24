@@ -2,6 +2,7 @@
 #define _PROJET_H_
 
 #include "raylib.h"
+#include <stdint.h>
 
 #define MENU_CHOICE_FONT_SIZE 50
 #define SNARE_COUNT 30
@@ -82,6 +83,15 @@ typedef struct
     unsigned int nbCurrentCount;
 
 } GAME_SNARE;
+
+typedef struct BufferCirculaire
+{
+    Snare snares[SNARE_COUNT];
+
+    uint16_t indexLecture;
+
+    uint16_t indexEcriture;
+} BufferCirculaire ;
 
 static GAME_SNARE GameSnare = { 0 };
 
