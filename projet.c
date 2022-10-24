@@ -1,5 +1,7 @@
 #include "projet.h"
 
+// Continue replacing GAME_SNARE with snares
+
 void SnareColorUpdate(Snare *snare)
 {
     if (snare->state == SNARE_START) snare->color = LIGHTGRAY;
