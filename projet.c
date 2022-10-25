@@ -75,6 +75,40 @@ int InitSnares(GAME_SNARE *gameSnare, unsigned int firstIndex, unsigned int last
     return 0;
 }
 
+void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanSnare)
+{
+    static unsigned int nbCalls = 1;
+
+    if (nbCalls % (60 * waitForNext) == 0)
+    {
+        
+    }
+
+    if ((framesCounter % 60 == 0) && (GameSnare.nbCurrentCount < SNARE_COUNT)) 
+    {
+        GameSnare.snares[GameSnare.nbCurrentCount].active = true;
+
+        GameSnare.snares[GameSnare.nbCurrentCount].nSeconds = (framesCounter / 60);
+
+        for (unsigned int i = 0; i < GameSnare.nbCurrentCount; i++)
+        {   
+            if (((framesCounter / 60) - GameSnare.snares[i].nSeconds) > 15)
+            {
+                GameSnare.snares[i].active = false;
+                GameSnare.snares[i].state = SNARE_START;
+            }   
+            else GameSnare.snares[i].state++;
+
+            SnareColorUpdate(&(GameSnare.snares[i]));
+        }
+
+        GameSnare.nbCurrentCount++;
+
+        if (GameSnare.nbCurrentCount == SNARE_COUNT) GameSnare.nbCurrentCount = 0;
+    }
+    nbCalls++;
+}
+
 void IfCollisionSendCitation(GAME_SENEQUE *GameSeneque, int currentFrameNumber)
 {
     GameSeneque->isCitation = true;

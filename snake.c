@@ -151,8 +151,6 @@ void InitGame(void)
     fruit.color = SKYBLUE;
     fruit.active = false;
 
-    InitSnares(&GameSnare, 0, SNARE_COUNT);
-
     InitProjetAddOn(&GameSeneque, snares);
 }
 
@@ -276,29 +274,6 @@ void UpdateGame(void)
                 }
             }
             
-            if ((framesCounter % 60 == 0) && (GameSnare.nbCurrentCount < SNARE_COUNT)) 
-            {
-                GameSnare.snares[GameSnare.nbCurrentCount].active = true;
-
-                GameSnare.snares[GameSnare.nbCurrentCount].nSeconds = (framesCounter / 60);
-
-                for (unsigned int i = 0; i < GameSnare.nbCurrentCount; i++)
-                {   
-                    if (((framesCounter / 60) - GameSnare.snares[i].nSeconds) > 15)
-                    {
-                        GameSnare.snares[i].active = false;
-                        GameSnare.snares[i].state = SNARE_START;
-                    }   
-                    else GameSnare.snares[i].state++;
-
-                    SnareColorUpdate(&(GameSnare.snares[i]));
-                }
-
-                GameSnare.nbCurrentCount++;
-
-                if (GameSnare.nbCurrentCount == SNARE_COUNT) GameSnare.nbCurrentCount = 0;
-            }
-
             displayCitation(&GameSeneque, 1, framesCounter);
             framesCounter++;
         }
