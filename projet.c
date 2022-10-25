@@ -79,9 +79,15 @@ void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanS
 {
     static unsigned int nbCalls = 1;
 
+    Snare snare = { 0 };
+
     if (nbCalls % (60 * waitForNext) == 0)
     {
-        
+        snare.active = true;
+
+        snare.nSeconds = nbcalls / 60;
+
+        ajoutFin(snare ,snares);
     }
 
     if ((framesCounter % 60 == 0) && (GameSnare.nbCurrentCount < SNARE_COUNT)) 
