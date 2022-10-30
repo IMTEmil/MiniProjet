@@ -219,18 +219,6 @@ void UpdateGame(void)
                     gameOver = true;
             }
 
-            switch(GameState)
-            {
-                case GS_SNARE:
-                {
-                    isFruit = false;
-                }
-                break;
-                default:
-                    isFruit = true;
-                break;
-            }
-
             // Fruit position calculation
             if (isFruit && !fruit.active)
             {
@@ -239,7 +227,8 @@ void UpdateGame(void)
 
                 for (int i = 0; i < counterTail; i++)
                 {
-                    while ((fruit.position.x == snake[i].position.x) && (fruit.position.y == snake[i].position.y))
+                    while (((fruit.position.x == snake[i].position.x) && (fruit.position.y == snake[i].position.y))
+                    || (GameState != GS_SNARE ? false : SnareAlreadyAtPosition(snares, fruit.position)))
                     {
                         fruit.position = (Vector2){GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
                         i = 0;
@@ -276,7 +265,7 @@ void UpdateGame(void)
             
             if (GameState == GS_SNARE)
             {
-                UpdateSnares(&snares, 1, 10);
+                UpdateSnares(&snares, 1, 50, fruit.position);
             }
 
             displayCitation(&GameSeneque, 1, framesCounter);
@@ -365,11 +354,9 @@ void DrawGame(void)
         // Draw snake : always
         for (int i = 0; i < counterTail; i++) DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
 
-        if (GameState != GS_SNARE)
-        {
-            // Draw fruit to pick
-            DrawRectangleV(fruit.position, fruit.size, fruit.color);
-        }
+       
+        // Draw fruit to pick
+        DrawRectangleV(fruit.position, fruit.size, fruit.color);
 
         if (GameState == GS_SNARE)
         {

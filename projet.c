@@ -9,7 +9,18 @@ void SnareColorUpdate(Snare *snare)
     if (snare->state == SNARE_CHARGED) snare->color = DARKPURPLE;
 }
 
-int InitSnare(Liste *snares, Snare *snare)
+bool SnareAlreadyAtPosition(Liste snares, Vector2 position)
+{
+    Liste currentList = snares;
+    while (currentList != NULL)
+    {
+        if ((currentList->val.position.x == position.x) && (currentList->val.position.y == position.y)) return false;
+        currentList = currentList->suiv;
+    }   
+    return false;
+}
+
+int InitSnare(Liste *snares, Snare *snare, Vector2 fruitPosition)
 {
     Vector2 offset = {0};
     int j = 0;
@@ -29,14 +40,9 @@ int InitSnare(Liste *snares, Snare *snare)
 
     snare->position = (Vector2){GetRandomValue(0, (GetScreenWidth() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (GetScreenHeight() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
 
-    for (j = 0; j < GameSnare.nbCurrentCount; j++)
+    if (SnareAlreadyAtPosition(*snares, snare->position) || ((fruitPosition.x == snare->position.x) && (fruitPosition.y == snare->position.y)))
     {
-        while ((snare->position.x == GameSnare.snares[j].position.x) 
-            && (snare->position.y == GameSnare.snares[j].position.y))
-        {
-            snare->position = (Vector2){GetRandomValue(0, (GetScreenWidth() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (GetScreenHeight() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
-            j = 0;
-        }
+        snare->position = (Vector2){GetRandomValue(0, (GetScreenWidth() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (GetScreenHeight() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
     }
 }
 
@@ -55,7 +61,7 @@ void snareStateIteration(Liste *snares, unsigned int nbCalls)
     }
 }
 
-void UpdateSnares(Liste *snares, unsigned int waitForNext, unsigned int lifeSpanSnare)
+void UpdateSnares(Liste *snares, unsigned int waitForNext, unsigned int lifeSpanSnare, Vector2 fruitPosition)
 {
     static unsigned int nbCalls = 1;
 
@@ -65,7 +71,7 @@ void UpdateSnares(Liste *snares, unsigned int waitForNext, unsigned int lifeSpan
     {
         snareStateIteration(snares, nbCalls);
 
-        InitSnare(snares, &snare);
+        InitSnare(snares, &snare, fruitPosition);
 
         snare.nSeconds = nbCalls / 60;
 
@@ -183,7 +189,7 @@ void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste *snares)
     gameSeneque->SenequeHeadImage = LoadTextureFromImage(TempImage);
     UnloadImage(TempImage);
 
-    InitSnare(snares, &snare);
+    InitSnare(snares, &snare, (Vector2) {0,0});
     *snares = creer(snare);
 }
 

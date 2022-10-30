@@ -107,9 +107,9 @@ void IfCollisionSendCitation(GAME_SENEQUE *GameSeneque, int currentFrameNumber);
 void displayCitation(GAME_SENEQUE *GameSeneque, int seconds, int currentFrame);
 void DrawSeneque(void);
 void DrawSnare(void);
-int InitSnares(GAME_SNARE *gameSnare, unsigned int firstIndex, unsigned int lastIndex);
-void UpdateSnares(Liste *snares, unsigned int waitForNext, unsigned int lifeSpanSnare);
+void UpdateSnares(Liste *snares, unsigned int waitForNext, unsigned int lifeSpanSnare, Vector2 fruitPosition);
 void DrawSnares(Liste snares);
+bool SnareAlreadyAtPosition(Liste snares, Vector2 position);
 
 // ajout d'une partie du code de la liste_chainée que nous avons fait en TP
 // je peux réutiliser le tout en changeant juste le typedef Snare Element
