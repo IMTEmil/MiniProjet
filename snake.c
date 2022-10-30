@@ -395,7 +395,7 @@ void DrawGame(void)
 // Unload game variables
 void UnloadGame(void)
 {
-    CloseProjetAddOn(&GameSeneque, snares);
+    CloseProjetAddOn(&GameSeneque, &snares);
 }
 
 // Update and Draw (one frame)

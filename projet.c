@@ -134,20 +134,14 @@ Liste ajoutTete(Element v, Liste l) {
 	return newList;
 }
 
-void detruire(Liste l) 
+void detruire(Liste *l) 
 {
-	Liste nextList = NULL;
-	Liste currentList = l;
-
-	if (!(estVide(l)))
+	while (!(estVide(*l)))
 	{
-		currentList->suiv;
-		do {
-			free(currentList);
-			currentList = nextList;
-			nextList = currentList->suiv;
-		} while (nextList != NULL);
+        retirePremierElement(l);
 	}
+    free(*l);
+    *l = NULL;
 }
 
 Liste ajoutFin(Element v, Liste l) 
@@ -193,7 +187,7 @@ void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste *snares)
     *snares = creer(snare);
 }
 
-void CloseProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snares)
+void CloseProjetAddOn(GAME_SENEQUE *gameSeneque, Liste *snares)
 {
     UnloadTexture(gameSeneque->SenequeHeadImage);
 

@@ -100,7 +100,7 @@ typedef Cellule* Liste;
 static GAME_SNARE GameSnare = { 0 };
 
 void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste *snares);
-void CloseProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snares);
+void CloseProjetAddOn(GAME_SENEQUE *gameSeneque, Liste *snares);
 
 void DrawMenu(void);
 void IfCollisionSendCitation(GAME_SENEQUE *GameSeneque, int currentFrameNumber);
@@ -122,7 +122,7 @@ Liste cherche(Element v,Liste l);
 
 Liste ajoutTete(Element v, Liste l);
 
-void detruire(Liste l);
+void detruire(Liste *l);
 
 Liste ajoutFin(Element v, Liste l);
 
