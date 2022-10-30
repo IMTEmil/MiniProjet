@@ -274,6 +274,8 @@ void UpdateGame(void)
                 }
             }
             
+            UpdateSnares(snares, 1, 15);
+
             displayCitation(&GameSeneque, 1, framesCounter);
             framesCounter++;
         }

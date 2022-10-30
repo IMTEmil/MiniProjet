@@ -75,6 +75,24 @@ int InitSnares(GAME_SNARE *gameSnare, unsigned int firstIndex, unsigned int last
     return 0;
 }
 
+void snareStateIteration(Liste snares, unsigned int nbCalls)
+{
+    Liste currentList = snares;
+    while (currentList != NULL)
+    {
+        if (currentList->val.state == SNARE_CHARGED)
+        {
+            currentList->val.nSeconds = nbCalls;
+        } else 
+        {
+            currentList->val.state++;
+            SnareColorUpdate(currentList);
+        }
+       
+        currentList = snares->suiv;
+    }
+}
+
 void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanSnare)
 {
     static unsigned int nbCalls = 1;
@@ -85,33 +103,18 @@ void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanS
     {
         snare.active = true;
 
-        snare.nSeconds = nbcalls / 60;
+        snare.nSeconds = nbCalls / 60;
 
         ajoutFin(snare ,snares);
     }
 
-    if ((framesCounter % 60 == 0) && (GameSnare.nbCurrentCount < SNARE_COUNT)) 
+    if (((nbCalls / 60) - snares->val.nSeconds) == lifeSpanSnare)
     {
-        GameSnare.snares[GameSnare.nbCurrentCount].active = true;
-
-        GameSnare.snares[GameSnare.nbCurrentCount].nSeconds = (framesCounter / 60);
-
-        for (unsigned int i = 0; i < GameSnare.nbCurrentCount; i++)
-        {   
-            if (((framesCounter / 60) - GameSnare.snares[i].nSeconds) > 15)
-            {
-                GameSnare.snares[i].active = false;
-                GameSnare.snares[i].state = SNARE_START;
-            }   
-            else GameSnare.snares[i].state++;
-
-            SnareColorUpdate(&(GameSnare.snares[i]));
-        }
-
-        GameSnare.nbCurrentCount++;
-
-        if (GameSnare.nbCurrentCount == SNARE_COUNT) GameSnare.nbCurrentCount = 0;
+        retirePremierElement(snares);
     }
+
+    snareStateIteration(snares, nbCalls);
+
     nbCalls++;
 }
 
@@ -175,7 +178,7 @@ void detruire(Liste l)
 Liste ajoutFin(Element v, Liste l) {
 	Liste lastElement = l;
 	Liste newList = malloc(sizeof(Cellule));
-	if (newList != NULL)
+	if (newList != NULL && !estVide(l))
 	{
 		do {
 			lastElement = lastElement->suiv;
