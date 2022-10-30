@@ -99,7 +99,7 @@ typedef Cellule* Liste;
 
 static GAME_SNARE GameSnare = { 0 };
 
-void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snareList);
+void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste *snares);
 void CloseProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snares);
 
 void DrawMenu(void);

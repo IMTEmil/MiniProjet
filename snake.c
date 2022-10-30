@@ -151,7 +151,7 @@ void InitGame(void)
     fruit.color = SKYBLUE;
     fruit.active = false;
 
-    InitProjetAddOn(&GameSeneque, snares);
+    InitProjetAddOn(&GameSeneque, &snares);
 }
 
 // Update game (one frame)

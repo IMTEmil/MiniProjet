@@ -19,7 +19,7 @@ int InitSnare(Liste snares, Snare *snare)
 
     snare->size = (Vector2) { SQUARE_SIZE, SQUARE_SIZE };    
 
-    snare->active = false;
+    snare->active = true;
 
     snare->state = SNARE_START;
 
@@ -86,7 +86,7 @@ void snareStateIteration(Liste snares, unsigned int nbCalls)
         } else 
         {
             currentList->val.state++;
-            SnareColorUpdate(currentList);
+            SnareColorUpdate(&currentList->val);
         }
        
         currentList = snares->suiv;
@@ -182,9 +182,9 @@ Liste ajoutFin(Element v, Liste l) {
 	{
 		do {
 			lastElement = lastElement->suiv;
-		} while (lastElement->suiv != NULL);
+		} while (lastElement != NULL);
 	}
-	lastElement->suiv = newList;
+	lastElement = newList;
 	newList->val = v;
 	newList->suiv = NULL;
 	return l;
@@ -202,7 +202,7 @@ Liste retirePremierElement(Liste l)
     return l;
 }
 
-void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snares)
+void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste *snares)
 {
     Image TempImage = { 0 };
     Snare snare = { 0 };
@@ -212,8 +212,8 @@ void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snares)
     gameSeneque->SenequeHeadImage = LoadTextureFromImage(TempImage);
     UnloadImage(TempImage);
 
-    InitSnare(snares, &snare);
-    snares = creer(snare);
+    InitSnare(*snares, &snare);
+    *snares = creer(snare);
 }
 
 void CloseProjetAddOn(GAME_SENEQUE *gameSeneque, Liste snares)
