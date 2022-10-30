@@ -99,11 +99,15 @@ void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanS
 
     Snare snare = { 0 };
 
+    snareStateIteration(snares, nbCalls);
+
     if (nbCalls % (60 * waitForNext) == 0)
     {
         snare.active = true;
 
         snare.nSeconds = nbCalls / 60;
+
+        InitSnare(snares, &snare);
 
         ajoutFin(snare ,snares);
     }
@@ -112,8 +116,6 @@ void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanS
     {
         retirePremierElement(snares);
     }
-
-    snareStateIteration(snares, nbCalls);
 
     nbCalls++;
 }
@@ -180,11 +182,12 @@ Liste ajoutFin(Element v, Liste l) {
 	Liste newList = malloc(sizeof(Cellule));
 	if (newList != NULL && !estVide(l))
 	{
-		do {
-			lastElement = lastElement->suiv;
-		} while (lastElement != NULL);
+		while (lastElement->suiv != NULL)
+        {
+            lastElement = lastElement->suiv;
+        }
 	}
-	lastElement = newList;
+	lastElement->suiv = newList;
 	newList->val = v;
 	newList->suiv = NULL;
 	return l;
