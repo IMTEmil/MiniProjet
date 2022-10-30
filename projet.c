@@ -9,7 +9,7 @@ void SnareColorUpdate(Snare *snare)
     if (snare->state == SNARE_CHARGED) snare->color = DARKPURPLE;
 }
 
-int InitSnare(Liste snares, Snare *snare)
+int InitSnare(Liste *snares, Snare *snare)
 {
     Vector2 offset = {0};
     int j = 0;
@@ -40,9 +40,9 @@ int InitSnare(Liste snares, Snare *snare)
     }
 }
 
-void snareStateIteration(Liste snares, unsigned int nbCalls)
+void snareStateIteration(Liste *snares, unsigned int nbCalls)
 {
-    Liste currentList = snares;
+    Liste currentList = *snares;
     while (currentList != NULL)
     {
         if (currentList->val.state != SNARE_CHARGED)
@@ -55,7 +55,7 @@ void snareStateIteration(Liste snares, unsigned int nbCalls)
     }
 }
 
-void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanSnare)
+void UpdateSnares(Liste *snares, unsigned int waitForNext, unsigned int lifeSpanSnare)
 {
     static unsigned int nbCalls = 1;
 
@@ -69,13 +69,13 @@ void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanS
 
         snare.nSeconds = nbCalls / 60;
 
-        ajoutFin(snare ,snares);
+        ajoutFin(snare ,*snares);
     }
 
     if (nbCalls == 60) 
         nbCalls = 60;
 
-    if (((nbCalls / 60) - snares->val.nSeconds) == lifeSpanSnare)
+    if (((nbCalls / 60) - (*snares)->val.nSeconds) == lifeSpanSnare)
     {
         retirePremierElement(snares);
     }
@@ -150,7 +150,8 @@ void detruire(Liste l)
 	}
 }
 
-Liste ajoutFin(Element v, Liste l) {
+Liste ajoutFin(Element v, Liste l) 
+{
 	Liste lastElement = l;
 	Liste newList = malloc(sizeof(Cellule));
 	if (newList != NULL && !estVide(l))
@@ -166,18 +167,16 @@ Liste ajoutFin(Element v, Liste l) {
 	return l;
 }
 
-Liste retirePremierElement(Liste l) 
+void retirePremierElement(Liste *l)
 {
     Liste premierElement = { 0 };
-	if (!estVide(l))
+	if (!estVide(*l))
     {
-        premierElement = l;
-        l = l->suiv;
-        premierElement->suiv = NULL;
+        premierElement = *l;
+        *l = (*l)->suiv;
         free(premierElement);
         premierElement = NULL;
     }
-    return l;
 }
 
 void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste *snares)
@@ -190,7 +189,7 @@ void InitProjetAddOn(GAME_SENEQUE *gameSeneque, Liste *snares)
     gameSeneque->SenequeHeadImage = LoadTextureFromImage(TempImage);
     UnloadImage(TempImage);
 
-    InitSnare(*snares, &snare);
+    InitSnare(snares, &snare);
     *snares = creer(snare);
 }
 

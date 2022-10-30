@@ -108,8 +108,7 @@ void displayCitation(GAME_SENEQUE *GameSeneque, int seconds, int currentFrame);
 void DrawSeneque(void);
 void DrawSnare(void);
 int InitSnares(GAME_SNARE *gameSnare, unsigned int firstIndex, unsigned int lastIndex);
-void SnareColorUpdate(Snare *snare);
-void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanSnare);
+void UpdateSnares(Liste *snares, unsigned int waitForNext, unsigned int lifeSpanSnare);
 void DrawSnares(Liste snares);
 
 // ajout d'une partie du code de la liste_chainée que nous avons fait en TP
@@ -127,6 +126,6 @@ void detruire(Liste l);
 
 Liste ajoutFin(Element v, Liste l);
 
-Liste retirePremierElement(Liste l);
+void retirePremierElement(Liste *l);
 
 #endif
