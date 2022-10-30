@@ -274,7 +274,10 @@ void UpdateGame(void)
                 }
             }
             
-            UpdateSnares(snares, 1, 10);
+            if (GameState == GS_SNARE)
+            {
+                UpdateSnares(snares, 1, 10);
+            }
 
             displayCitation(&GameSeneque, 1, framesCounter);
             framesCounter++;

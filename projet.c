@@ -25,6 +25,8 @@ int InitSnare(Liste snares, Snare *snare)
 
     snare->nSeconds = 0;
 
+    snare->color = LIGHTGRAY;
+
     snare->position = (Vector2){GetRandomValue(0, (GetScreenWidth() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (GetScreenHeight() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
 
     for (j = 0; j < GameSnare.nbCurrentCount; j++)
@@ -36,45 +38,6 @@ int InitSnare(Liste snares, Snare *snare)
             j = 0;
         }
     }
-    
-    SnareColorUpdate(snare);
-}
-
-int InitSnares(GAME_SNARE *gameSnare, unsigned int firstIndex, unsigned int lastIndex)
-{
-    int i = 0, j = 0;
-    Vector2 offset = {0};
-
-    offset.x = GetScreenWidth() % SQUARE_SIZE;
-    offset.y = GetScreenHeight() % SQUARE_SIZE;
-
-    if (lastIndex > SNARE_COUNT || lastIndex > SNARE_COUNT) return -1;
-
-    for (i = firstIndex; i < lastIndex; i++)
-    {        
-        gameSnare->snares[i].size = (Vector2) { SQUARE_SIZE, SQUARE_SIZE };
-
-        SnareColorUpdate(&gameSnare->snares[i]);     
-
-        gameSnare->snares[i].active = false;
-
-        gameSnare->snares[i].state = SNARE_START;
-
-        gameSnare->snares[i].position = (Vector2){GetRandomValue(0, (GetScreenWidth() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (GetScreenHeight() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
-
-        for (j = 0; j < SNARE_COUNT; j++)
-        {
-            if (i == j) break;
-        
-            while ((gameSnare->snares[i].position.x == gameSnare->snares[j].position.x) && (gameSnare->snares[i].position.y == gameSnare->snares[j].position.y))
-            {
-                gameSnare->snares[i].position = (Vector2){GetRandomValue(0, (GetScreenWidth() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (GetScreenHeight() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
-                j = 0;
-            }
-        }
-    }   
-
-    return 0;
 }
 
 void snareStateIteration(Liste snares, unsigned int nbCalls)
@@ -98,10 +61,10 @@ void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanS
 
     Snare snare = { 0 };
 
-    snareStateIteration(snares, nbCalls);
-
     if (nbCalls % (60 * waitForNext) == 0)
     {
+        snareStateIteration(snares, nbCalls);
+
         InitSnare(snares, &snare);
 
         snare.nSeconds = nbCalls / 60;
