@@ -23,6 +23,8 @@ int InitSnare(Liste snares, Snare *snare)
 
     snare->state = SNARE_START;
 
+    snare->nSeconds = 0;
+
     snare->position = (Vector2){GetRandomValue(0, (GetScreenWidth() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (GetScreenHeight() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
 
     for (j = 0; j < GameSnare.nbCurrentCount; j++)
@@ -80,16 +82,13 @@ void snareStateIteration(Liste snares, unsigned int nbCalls)
     Liste currentList = snares;
     while (currentList != NULL)
     {
-        if (currentList->val.state == SNARE_CHARGED)
-        {
-            currentList->val.nSeconds = nbCalls;
-        } else 
+        if (currentList->val.state != SNARE_CHARGED)
         {
             currentList->val.state++;
             SnareColorUpdate(&currentList->val);
         }
        
-        currentList = snares->suiv;
+        currentList = currentList->suiv;
     }
 }
 
@@ -103,14 +102,15 @@ void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanS
 
     if (nbCalls % (60 * waitForNext) == 0)
     {
-        snare.active = true;
+        InitSnare(snares, &snare);
 
         snare.nSeconds = nbCalls / 60;
 
-        InitSnare(snares, &snare);
-
         ajoutFin(snare ,snares);
     }
+
+    if (nbCalls == 60) 
+        nbCalls = 60;
 
     if (((nbCalls / 60) - snares->val.nSeconds) == lifeSpanSnare)
     {
@@ -118,6 +118,16 @@ void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanS
     }
 
     nbCalls++;
+}
+
+void DrawSnares(Liste snares)
+{
+    Liste currentList = snares;
+    while (currentList != NULL)
+    {
+        DrawRectangleV(currentList->val.position, currentList->val.size, currentList->val.color);
+        currentList = currentList->suiv;
+    }
 }
 
 void IfCollisionSendCitation(GAME_SENEQUE *GameSeneque, int currentFrameNumber)
@@ -199,8 +209,10 @@ Liste retirePremierElement(Liste l)
 	if (!estVide(l))
     {
         premierElement = l;
-        l = premierElement->suiv;
+        l = l->suiv;
+        premierElement->suiv = NULL;
         free(premierElement);
+        premierElement = NULL;
     }
     return l;
 }

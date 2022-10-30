@@ -274,7 +274,7 @@ void UpdateGame(void)
                 }
             }
             
-            UpdateSnares(snares, 1, 15);
+            UpdateSnares(snares, 1, 10);
 
             displayCitation(&GameSeneque, 1, framesCounter);
             framesCounter++;
@@ -335,19 +335,6 @@ void DrawSeneque(void)
     }
 }
 
-void DrawSnares(void)
-{
-    int i = 0;
-    if (GameState == GS_SNARE)
-    {
-        for (i = 0; i < GameSnare.nbCurrentCount; i++)
-        {
-            if (GameSnare.snares[i].active == false) continue;
-            DrawRectangleV(GameSnare.snares[i].position, GameSnare.snares[i].size, GameSnare.snares[i].color);
-        }
-    }
-}
-
 // Draw game (one frame)
 void DrawGame(void)
 {
@@ -381,7 +368,10 @@ void DrawGame(void)
             DrawRectangleV(fruit.position, fruit.size, fruit.color);
         }
 
-        DrawSnares();
+        if (GameState == GS_SNARE)
+        {
+            DrawSnares(snares);
+        }
 
         DrawSeneque();
 
@@ -391,6 +381,7 @@ void DrawGame(void)
     else
     {
         if (GameState == GS_SENEQUE) DrawText("C'EST PAS GRAVE SENEQU'UN JEU !", GetScreenWidth() / 2 - MeasureText("C'EST PAS GRAVE SENEQU'UN JEU !", 20) / 2, GetScreenHeight() / 2 - 100, 20, GRAY);
+        if (GameState == GS_SNARE) DrawText("SNARE'IEN, RECOMMENCE !", GetScreenWidth() / 2 - MeasureText("SNARE'IEN, RECOMMENCE !", 20) / 2, GetScreenHeight() / 2 - 100, 20, GRAY);
         DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("OR PRESS [I] TO GO BACK TO MENU", GetScreenWidth() / 2 - MeasureText("OR PRESS [I] TO GO BACK TO MENU", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
     }

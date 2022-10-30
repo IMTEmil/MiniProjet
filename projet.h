@@ -110,6 +110,7 @@ void DrawSnare(void);
 int InitSnares(GAME_SNARE *gameSnare, unsigned int firstIndex, unsigned int lastIndex);
 void SnareColorUpdate(Snare *snare);
 void UpdateSnares(Liste snares, unsigned int waitForNext, unsigned int lifeSpanSnare);
+void DrawSnares(Liste snares);
 
 // ajout d'une partie du code de la liste_chainée que nous avons fait en TP
 // je peux réutiliser le tout en changeant juste le typedef Snare Element
