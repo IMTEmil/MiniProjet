@@ -209,7 +209,13 @@ void UpdateGame(void)
                 ((snake[0].position.y) > (screenHeight - offset.y)) ||
                 (snake[0].position.x < 0) || (snake[0].position.y < 0))
             {
-                gameOver = true;
+                if (GameState != GS_SNARE) gameOver = true;
+                else {
+                    if ((snake[0].position.x) > (screenWidth - offset.x)) snake[0].position.x =offset.x/2;
+                    else if ((snake[0].position.y) > (screenHeight - offset.y)) snake[0].position.y = offset.y/2;
+                    else if (snake[0].position.x < 0) snake[0].position.x = screenWidth - offset.x / 2 - SQUARE_SIZE;
+                    else if (snake[0].position.y < 0) snake[0].position.y = screenHeight - offset.y / 2 - SQUARE_SIZE;
+                }
             }
 
             // Collision with yourself
