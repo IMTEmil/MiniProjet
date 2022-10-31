@@ -211,7 +211,7 @@ void UpdateGame(void)
             {
                 if (GameState != GS_SNARE) gameOver = true;
                 else {
-                    if ((snake[0].position.x) > (screenWidth - offset.x)) snake[0].position.x =offset.x/2;
+                    if ((snake[0].position.x) > (screenWidth - offset.x)) snake[0].position.x = offset.x/2;
                     else if ((snake[0].position.y) > (screenHeight - offset.y)) snake[0].position.y = offset.y/2;
                     else if (snake[0].position.x < 0) snake[0].position.x = screenWidth - offset.x / 2 - SQUARE_SIZE;
                     else if (snake[0].position.y < 0) snake[0].position.y = screenHeight - offset.y / 2 - SQUARE_SIZE;
@@ -242,7 +242,7 @@ void UpdateGame(void)
                 }
 
             }
-
+            
             // Collision
             if ((snake[0].position.x < (fruit.position.x + fruit.size.x) && (snake[0].position.x + snake[0].size.x) > fruit.position.x) &&
                 (snake[0].position.y < (fruit.position.y + fruit.size.y) && (snake[0].position.y + snake[0].size.y) > fruit.position.y))

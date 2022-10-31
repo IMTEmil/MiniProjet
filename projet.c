@@ -14,7 +14,7 @@ bool SnareAlreadyAtPosition(Liste snares, Vector2 position)
     Liste currentList = snares;
     while (currentList != NULL)
     {
-        if ((currentList->val.position.x == position.x) && (currentList->val.position.y == position.y)) return false;
+        if ((currentList->val.position.x == position.x) && (currentList->val.position.y == position.y)) return true;
         currentList = currentList->suiv;
     }   
     return false;
@@ -40,7 +40,7 @@ int InitSnare(Liste *snares, Snare *snare, Vector2 fruitPosition)
 
     snare->position = (Vector2){GetRandomValue(0, (GetScreenWidth() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (GetScreenHeight() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
 
-    if (SnareAlreadyAtPosition(*snares, snare->position) || ((fruitPosition.x == snare->position.x) && (fruitPosition.y == snare->position.y)))
+    while (SnareAlreadyAtPosition(*snares, snare->position) || ((fruitPosition.x == snare->position.x) && (fruitPosition.y == snare->position.y)))
     {
         snare->position = (Vector2){GetRandomValue(0, (GetScreenWidth() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (GetScreenHeight() / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2};
     }
