@@ -1,7 +1,5 @@
 #include "projet.h"
 
-// Continue replacing GAME_SNARE with snares
-
 void SnareColorUpdate(Snare *snare)
 {
     if (snare->state == SNARE_START) snare->color = LIGHTGRAY;
@@ -15,6 +13,21 @@ bool SnareAlreadyAtPosition(Liste snares, Vector2 position)
     while (currentList != NULL)
     {
         if ((currentList->val.position.x == position.x) && (currentList->val.position.y == position.y)) return true;
+        currentList = currentList->suiv;
+    }   
+    return false;
+}
+
+bool SnareCollision(Liste snares, Vector2 position)
+{
+    Liste currentList = snares;
+    while (currentList != NULL)
+    {   
+        if (currentList->val.state == SNARE_CHARGED)
+        {
+            if ((currentList->val.position.x == position.x) && (currentList->val.position.y == position.y)) return true;
+            
+        }
         currentList = currentList->suiv;
     }   
     return false;

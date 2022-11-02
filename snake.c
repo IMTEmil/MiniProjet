@@ -253,22 +253,12 @@ void UpdateGame(void)
 
                 IfCollisionSendCitation(&(GameSeneque), framesCounter);
             }
-
-            // Snare collision
-            if (GameState == GS_SNARE)
-            {
-                for (int i = 0; i < GameSnare.nbCurrentCount; i++)
-                {
-                    if (GameSnare.snares[i].active == false) continue;
-                    if (GameSnare.snares[i].state != SNARE_CHARGED) continue;
-                    if ((snake[0].position.x < (GameSnare.snares[i].position.x + GameSnare.snares[i].size.x) && (snake[0].position.x + snake[0].size.x) > GameSnare.snares[i].position.x) &&
-                        (snake[0].position.y < (GameSnare.snares[i].position.y + GameSnare.snares[i].size.y) && (snake[0].position.y + snake[0].size.y) > GameSnare.snares[i].position.y))
-                    {
-                        gameOver = true;                
-                    }
-                }
-            }
             
+            if (SnareCollision(snares, snake[0].position))
+            {
+                gameOver = true;
+            }
+
             if (GameState == GS_SNARE)
             {
                 UpdateSnares(&snares, 1, 50, fruit.position);
